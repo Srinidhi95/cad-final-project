@@ -2,19 +2,27 @@ package scheduler;
 
 public class Node {
 
-	public int ID; // ID of each node
+	
+	// TODO: Should variables all be private?
+	
+	private int ID; // ID of each node
 	public int state; // State that it's in
 	public String op; // Operation that it performs
-	public int conn; // TODO: connections should be an array of ints.
+	public int [] conn; // TODO: connections should be an array of ints.
+	
+	public static int numOfNodes = 0;
+	
+	// TODO: Some kind of reset function for numOfNodes?
 	
 	
 	// Constructor for Node
-	public Node (int initID, int initState, String initOp )
+	public Node (int initState, String initOp, int [] connList )
 	{
-		ID = initID;
+		//ID = initID;
 		state = initState;
 		op = initOp;
-	
+		conn = connList;
+		ID = ++numOfNodes;
 	}
 	
 	public void setID (int newID)
@@ -50,6 +58,19 @@ public class Node {
 	public String getOp()
 	{
 		return op;
+	}
+	
+	public int [] getConn()
+	{
+		return conn;
+	}
+	
+	public void printConn() // for diagnostic purposes
+	{
+		for (int i = 0; i < conn.length; i++)
+		{
+			System.out.println(conn[i]);
+		}
 	}
 	
 	// TODO: Write getter for connections
