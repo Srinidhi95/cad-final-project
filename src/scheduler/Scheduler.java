@@ -10,12 +10,20 @@ public class Scheduler {
 		System.out.println("First argument = " + args[0]);
 		
 		String op = "add";
-		Node newNode = new Node(0,0,op);
+		int [] connList = new int[3];
+		connList[0] = 4;
+		connList[1] = 9;
+		connList[2] = 12;
 		
-		System.out.println("ID = " + newNode.getID()); 
-		newNode.setID(2);		
-		System.out.println("ID = " + newNode.getID());
+		Node newNode = new Node(0,op, connList);
 		
+		System.out.println("ID = " + newNode.getID()); 	
+		
+		Node secondNode = new Node(0, op, connList);
+		
+		System.out.println("ID2 = " + secondNode.getID());
+		
+		newNode.printConn();
 		
 		//readFile(args[0]);
 	}
