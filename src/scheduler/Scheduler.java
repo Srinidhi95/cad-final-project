@@ -9,8 +9,21 @@ public class Scheduler {
 		
 		System.out.println("First argument = " + args[0]);
 		
-		readFile(args[0]);
+		String op = "add";
+		Node newNode = new Node(0,0,op);
+		
+		System.out.println("ID = " + newNode.getID()); 
+		newNode.setID(2);		
+		System.out.println("ID = " + newNode.getID());
+		
+		
+		//readFile(args[0]);
 	}
+	
+	
+	// TODO: Parse file according to CDFG definition
+	// TODO: Create a node class to store different nodes
+	// TODO: Create a CDFG class that holds different nodes
 	
 	
 	public static void readFile(String filename){
@@ -30,6 +43,7 @@ public class Scheduler {
 			}
 			count++;
 			
+			// keep reading lines until end of file is reached
 			while (line != null)
 			{
 				System.out.println("Line Read: " + line);
