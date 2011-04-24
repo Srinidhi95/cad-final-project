@@ -27,6 +27,7 @@ public class Scheduler {
 		//newNode.printConn();
 		
 		readFile(args[0]); // read and parse the file
+		// TODO: Get CDFG from function
 	}
 	
 	
@@ -36,11 +37,12 @@ public class Scheduler {
 		
 		boolean RC_FLAG = false;
 		boolean TC_FLAG = false;
+		int rc_read = 0; // number of resources read
+		
 		
 		CDFG curCDFG = null;
 		Node tempNode = null;
 		int numNodes = 0;
-		
 		
 		
 		//System.out.println("In Readfile: " + filename);
@@ -130,7 +132,6 @@ public class Scheduler {
 					// create the node
 					
 					tempNode = new Node(tempID, tempState, tempOp, parsedConns_int);
-					//curCDFG = new CDFG(numNodes);
 					
 					int success = curCDFG.addNode(tempNode, tempID);
 					if (success < 0)
@@ -170,8 +171,8 @@ public class Scheduler {
 					}
 					else if(temp.equalsIgnoreCase("rc"))
 					{
-					
 						// set a flag RC
+						rc_read = 0;
 						RC_FLAG = true;
 					}
 					else if(temp.equalsIgnoreCase("tc1"))
@@ -189,10 +190,10 @@ public class Scheduler {
 					
 				}
 				
-				System.out.println("FLAG = " + RC_FLAG);
 				if (lineNum > 1 && RC_FLAG && !TC_FLAG)
 				{
 					// read resource constraints
+					
 					System.out.println("Reading RC constraints.");
 					RC_FLAG = false;
 				}
