@@ -43,6 +43,7 @@ public class Scheduler {
 		CDFG curCDFG = null;
 		Node tempNode = null;
 		int numNodes = 0;
+		String [] unitsArray; 
 		
 		
 		//System.out.println("In Readfile: " + filename);
@@ -79,7 +80,7 @@ public class Scheduler {
 				{
 					temp = line.substring(1);
 					numNodes = Integer.parseInt(temp); // Number of nodes in this CDFG
-					System.out.println("#Nodes\t= \t" + numNodes);
+				//	System.out.println("#Nodes\t= \t" + numNodes);
 					if(numNodes > 0)
 					{
 						// create a CDFG object
@@ -90,7 +91,7 @@ public class Scheduler {
 					
 				}
 			
-				if (!line.startsWith("."))
+				if (!line.startsWith(".") && !RC_FLAG && !TC_FLAG)
 				{
 				
 					curNode = line.split(delimiter);
@@ -116,7 +117,7 @@ public class Scheduler {
 						for (int i = 0; i < parsedConns.length; i++)
 						{
 							parsedConns_int[i] = Integer.parseInt(parsedConns[i]);
-							System.out.println("Conn = " + parsedConns_int[i]);
+						//	System.out.println("Conn = " + parsedConns_int[i]);
 						
 						}
 						
@@ -125,7 +126,7 @@ public class Scheduler {
 					{
 						parsedConns_int = new int [1];
 						parsedConns_int[0] = Integer.parseInt(tempConn);
-						System.out.println("Conn = " + parsedConns_int[0]);
+				//		System.out.println("Conn = " + parsedConns_int[0]);
 						
 					}
 					
@@ -146,15 +147,105 @@ public class Scheduler {
 					
 				}	
 				
+				
+				
+				if (lineNum > 1 && RC_FLAG && !TC_FLAG)
+				{
+					// read resource constraints
+					
+					
+					System.out.println("Reading RC constraints.");
+					
+					System.out.println("line= " + line);
+					
+					unitsArray = line.split("=");
+					
+					if (unitsArray.length != 2)
+					{
+						System.out.println("Error: Specify resource amount as NAME=NUM. (eg ALU=1).");
+						System.exit(1);
+					}else{
+						
+						if(unitsArray[0].equalsIgnoreCase("alu"))
+						{
+							System.out.println("Read ALU");
+							curCDFG.setALU(Integer.parseInt(unitsArray[1]));
+							rc_read++;
+							
+						}
+						
+						if (unitsArray[0].equalsIgnoreCase("mul"))
+						{
+							System.out.println("Read Multiplier");
+							curCDFG.setMUL(Integer.parseInt(unitsArray[1]));
+							rc_read++;
+						}
+						
+						if(unitsArray[0].equalsIgnoreCase("min"))
+						{
+							System.out.println("Read MIN");
+							curCDFG.setMIN(Integer.parseInt(unitsArray[1]));
+							rc_read++;
+							
+						}
+						
+						if(unitsArray[0].equalsIgnoreCase("max"))
+						{
+							System.out.println("Read MAX");
+							curCDFG.setMAX(Integer.parseInt(unitsArray[1]));
+							rc_read++;
+							
+						}
+						
+						if(unitsArray[0].equalsIgnoreCase("abs"))
+						{
+							System.out.println("Read ABS");
+							curCDFG.setABS(Integer.parseInt(unitsArray[1]));
+							rc_read++;
+							
+						}
+		
+						
+						
+					}
+					
+					
+					
+					if (rc_read == 5)
+					{
+						RC_FLAG = false; // all resourced read
+					}
+				}
+				
+				if (lineNum > 1 && TC_FLAG && !RC_FLAG)
+				{
+					// read time constraints
+					System.out.println("Reading TC constraints.");
+					TC_FLAG = false;
+				}
+				
+				
+				
 				if (lineNum > 1 && line.startsWith("."))
 				{
-					System.out.println("Starts with '.'");
+					//System.out.println("Starts with '.'");
 					temp = line.substring(1);
 					
-					System.out.println("temp = " + temp);
+					//System.out.println("temp = " + temp);
 					
 					if(temp.equalsIgnoreCase("e"))
 					{
+						if (RC_FLAG == true)
+						{
+							System.out.println("Error: Must specify number of all 5 resource types.");
+							System.exit(1);
+						}
+						
+						if (TC_FLAG == true)
+						{
+							System.out.println("Error: Must specify clock cycle limit.");
+							System.exit(1);
+						}
 						
 						System.out.println("numNodes = " + curCDFG.getNumNodes());
 						curCDFG.printCDFG();
@@ -189,21 +280,7 @@ public class Scheduler {
 					}
 					
 				}
-				
-				if (lineNum > 1 && RC_FLAG && !TC_FLAG)
-				{
-					// read resource constraints
-					
-					System.out.println("Reading RC constraints.");
-					RC_FLAG = false;
-				}
-				
-				if (lineNum > 1 && TC_FLAG && !RC_FLAG)
-				{
-					// read time constraints
-					System.out.println("Reading TC constraints.");
-					TC_FLAG = false;
-				}
+
 					
 					
 					

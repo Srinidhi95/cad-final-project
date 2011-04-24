@@ -118,12 +118,22 @@ public class CDFG {
 		{
 			// add the node to the array at specified position
 			nodes[position] = newNode;
-			System.out.println("Added Node at position: " + position);
-			System.out.println("Node State was: " + nodes[position].getState());
-			System.out.println("Node OP was: " + nodes[position].getOp());
+			//System.out.println("Added Node at position: " + position);
+			//System.out.println("Node State was: " + nodes[position].getState());
+			//System.out.println("Node OP was: " + nodes[position].getOp());
 			return 1; // success
 		}
 		
+	}
+	
+	public void printResources()
+	{
+		System.out.println("Number of ALUs \t=\t " + this.getALU());
+		System.out.println("Number of Mult \t=\t " + this.getMUL());
+		System.out.println("Number of MIN \t=\t " + this.getMIN());
+		System.out.println("Number of MAX \t=\t " + this.getMIN());
+		System.out.println("Number of ABS \t=\t " + this.getABS());
+	
 	}
 	
 	public void printCDFG()
@@ -139,6 +149,7 @@ public class CDFG {
 			}
 		}
 			
+		this.printResources();
 
 		
 	}
