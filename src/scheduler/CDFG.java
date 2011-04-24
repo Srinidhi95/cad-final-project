@@ -13,6 +13,8 @@ public class CDFG {
 	private int numMAX = 0;
 	private int numABS = 0;
 	
+	private int numCLK = 0;
+	
 	private int numNodes = 0;
 	private static int ID = 0;
 	//private int states = 0;
@@ -28,6 +30,17 @@ public class CDFG {
 		ID++; // needed?
 	}
 	
+	
+	public void setCLK(int clk)
+	{
+		numCLK = clk;
+	}
+	
+	public int getCLK()
+	{
+		return numCLK;
+	}
+	
 	public void setResources(int alu, int mul, int min, int max, int abs)
 	{
 		numALU = alu;
@@ -41,6 +54,7 @@ public class CDFG {
 	{
 		numALU = alu;
 	}
+
 	
 	public int getALU()
 	{
@@ -133,6 +147,7 @@ public class CDFG {
 		System.out.println("Number of MIN \t=\t " + this.getMIN());
 		System.out.println("Number of MAX \t=\t " + this.getMIN());
 		System.out.println("Number of ABS \t=\t " + this.getABS());
+		System.out.println("Clock Cycles \t=\t " + this.getCLK());
 	
 	}
 	
