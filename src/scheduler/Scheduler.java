@@ -10,7 +10,8 @@ public class Scheduler {
 		System.out.println("First argument = " + args[0]);
 		
 		String op = "add";
-		int [] connList = new int[3];
+		int x = 4;
+		int [] connList = new int[x];
 		connList[0] = 4;
 		connList[1] = 9;
 		connList[2] = 12;
@@ -25,14 +26,11 @@ public class Scheduler {
 		
 		newNode.printConn();
 		
-		//readFile(args[0]);
+		readFile(args[0]); // read and parse the file
 	}
 	
 	
-	// TODO: Parse file according to CDFG definition
-	// TODO: Create a node class to store different nodes
-	// TODO: Create a CDFG class that holds different nodes
-	
+	// TODO: Parse file according to CDFG definition	
 	
 	public static void readFile(String filename){
 		
@@ -55,6 +53,15 @@ public class Scheduler {
 			while (line != null)
 			{
 				System.out.println("Line Read: " + line);
+				
+				if (line.startsWith("."))
+				{
+					System.out.println("Starts with '.'");
+				}
+				else {
+					System.out.println("DOES NOT START WITH '.'");
+				}
+				
 				System.out.println("The count is: " + count);
 				line = bufRead.readLine();
 				count++;
