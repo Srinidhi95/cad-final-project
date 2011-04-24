@@ -7,10 +7,15 @@ public class CDFG {
 	private Node [] nodes; // make private?
 	private String title = "";
 	
+	private int numALU = 0;
+	private int numMUL = 0;
+	private int numMIN = 0;
+	private int numMAX = 0;
+	private int numABS = 0;
 	
 	private int numNodes = 0;
 	private static int ID = 0;
-	private int states = 0;
+	//private int states = 0;
 	
 	
 	
@@ -20,7 +25,69 @@ public class CDFG {
 		nodes = new Node[numberOfNodes]; // create an array of new nodes
 		//nodes = nodeArray; 
 		numNodes = numberOfNodes;
-		ID++;
+		ID++; // needed?
+	}
+	
+	public void setResources(int alu, int mul, int min, int max, int abs)
+	{
+		numALU = alu;
+		numMUL = mul;
+		numMIN = min;
+		numMAX = max;
+		numABS = abs;	
+	}
+	
+	public void setALU(int alu)
+	{
+		numALU = alu;
+	}
+	
+	public int getALU()
+	{
+		return numALU;
+	}
+	
+	
+	public void setMUL(int mul)
+	{
+		numMUL = mul;
+	}
+	
+	public int getMUL()
+	{
+		return numMUL;
+	}
+	
+	
+	public void setMIN(int min)
+	{
+		numMIN = min;
+	}
+	
+	public int getMIN()
+	{
+		return numMIN;
+	}
+	
+	public void setMAX(int max)
+	{
+		numMAX = max;
+	}
+	
+	public int getMAX()
+	{
+		return numMAX;
+	}
+	
+	
+	public void setABS(int abs)
+	{
+		numABS = abs;	
+	}
+	
+	public int getABS()
+	{
+		return numABS;
 	}
 	
 	
