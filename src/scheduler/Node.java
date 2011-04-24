@@ -5,8 +5,8 @@ public class Node {
 	
 	// TODO: Should variables all be private?
 	
-	private int ID; // ID of each node
-	public int state; // State that it's in
+	private int ID; // ID of the node
+	public int state; // State that the node is in
 	public String op; // Operation that it performs
 	public int [] conn; // Array of connections (each entry is the ID of another node)
 	
@@ -16,13 +16,14 @@ public class Node {
 	
 	
 	// Constructor for Node
-	public Node (int initState, String initOp, int [] connList )
+	public Node (int initID, int initState, String initOp, int [] connList )
 	{
 		//ID = initID;
 		state = initState;
 		op = initOp;
 		conn = connList;
-		ID = numOfNodes++;
+		ID = initID;
+		//numOfNodes++;
 	}
 	
 	public void setID (int newID)
@@ -67,12 +68,12 @@ public class Node {
 	
 	public void printConn() // for diagnostic purposes
 	{
-		System.out.println("Number of connections = " + conn.length);
-		
+		System.out.println("Connections:");
 		for (int i = 0; i < conn.length; i++)
 		{
-			System.out.println(conn[i]);
+			System.out.println("\t\t" + conn[i]);
 		}
+		System.out.println("Number of connections = " + conn.length);
 	}
 
 	
