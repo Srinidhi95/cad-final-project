@@ -1,8 +1,6 @@
-.4
-
-sample input
-sample line 2
-sample line 3
-sample line 4
-
+.3
+0-1-add-2,3,4
+1-1-sub-2
+2-2-mul-0
+.rc
 .e
