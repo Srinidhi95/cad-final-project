@@ -8,7 +8,7 @@ public class Node {
 	private int ID; // ID of each node
 	public int state; // State that it's in
 	public String op; // Operation that it performs
-	public int [] conn; // TODO: connections should be an array of ints.
+	public int [] conn; // Array of connections (each entry is the ID of another node)
 	
 	public static int numOfNodes = 0;
 	
@@ -22,7 +22,7 @@ public class Node {
 		state = initState;
 		op = initOp;
 		conn = connList;
-		ID = ++numOfNodes;
+		ID = numOfNodes++;
 	}
 	
 	public void setID (int newID)
@@ -67,13 +67,13 @@ public class Node {
 	
 	public void printConn() // for diagnostic purposes
 	{
+		System.out.println("Number of connections = " + conn.length);
+		
 		for (int i = 0; i < conn.length; i++)
 		{
 			System.out.println(conn[i]);
 		}
 	}
-	
-	// TODO: Write getter for connections
-	
+
 	
 }
