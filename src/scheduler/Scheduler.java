@@ -156,8 +156,6 @@ public class Scheduler {
 					
 					System.out.println("Reading RC constraints.");
 					
-					System.out.println("line= " + line);
-					
 					unitsArray = line.split("=");
 					
 					if (unitsArray.length != 2)
@@ -221,12 +219,24 @@ public class Scheduler {
 				{
 					// read time constraints
 					System.out.println("Reading TC constraints.");
+					unitsArray = line.split("=");
+					
+					if (!unitsArray[0].equalsIgnoreCase("clk") || unitsArray.length != 2)
+					{
+						System.out.println("Error: Specify clock cycle restraint as clk=NUM");
+						System.exit(1);
+					}
+					else
+					{
+						curCDFG.setCLK(Integer.parseInt(unitsArray[1]));
+					}
+					
 					TC_FLAG = false;
 				}
 				
 				
 				
-				if (lineNum > 1 && line.startsWith("."))
+				if (lineNum > 1 && line.startsWith(".") && !RC_FLAG && !TC_FLAG)
 				{
 					//System.out.println("Starts with '.'");
 					temp = line.substring(1);
@@ -249,6 +259,8 @@ public class Scheduler {
 						
 						System.out.println("numNodes = " + curCDFG.getNumNodes());
 						curCDFG.printCDFG();
+						
+						System.out.println("Parsing Successfully Completed!");
 						// end is reached
 						// TODO: Add return functionality
 					}
@@ -281,19 +293,6 @@ public class Scheduler {
 					
 				}
 
-					
-					
-					
-	
-		
-			
-				
-				
-				
-				
-				
-				
-				
 				
 				//System.out.println("The count is: " + count);
 				line = bufRead.readLine();
