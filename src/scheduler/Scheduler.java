@@ -4,34 +4,20 @@ import java.io.*;
 
 
 public class Scheduler {
+	
+	public static int operation = 0; // 1 = ASAP, 2 = ALAP, 3 = RC, 4 = TC1, 5 = TC2
+	
 	public static void main (String[] args){
+		
 		System.out.println("CAD Final Project");
+		System.out.println("Filename = " + args[0]);
 		
-		System.out.println("First argument = " + args[0]);
-		
-		String op = "add";
-		int x = 3;
-		int [] connList = new int[x];
-		connList[0] = 4;
-		connList[1] = 9;
-		connList[2] = 12;
-		
-		Node newNode = new Node(0, 0,op, connList);
-		
-		System.out.println("ID = " + newNode.getID()); 	
-		
-		Node secondNode = new Node(1, 0, op, connList);
-		
-		System.out.println("ID2 = " + secondNode.getID());
-		
-		//newNode.printConn();
-		
+	
 		readFile(args[0]); // read and parse the file
+		System.out.println("Operation = " + operation);
+		
 		// TODO: Get CDFG from function
 	}
-	
-	
-	// TODO: Parse file according to CDFG definition	
 	
 	public static void readFile(String filename){
 		
@@ -45,8 +31,6 @@ public class Scheduler {
 		int numNodes = 0;
 		String [] unitsArray; 
 		
-		
-		//System.out.println("In Readfile: " + filename);
 	try{
 			FileReader input = new FileReader(filename);
 			BufferedReader bufRead = new BufferedReader(input); 
@@ -54,12 +38,12 @@ public class Scheduler {
 			
 			String delimiter = "-";
 			
-			// temporary variables
+			// to store temporary values when parsing
 			String temp;
 			String [] curNode;
 			
-			
 			int lineNum = 0;
+			
 			// read a line
 			try {
 				line = bufRead.readLine();
@@ -67,6 +51,7 @@ public class Scheduler {
 				System.out.println("Cannot Read File.");
 				e.printStackTrace();
 			}
+			
 			lineNum++;
 			
 			// keep reading lines until end of file is reached
@@ -80,11 +65,10 @@ public class Scheduler {
 				{
 					temp = line.substring(1);
 					numNodes = Integer.parseInt(temp); // Number of nodes in this CDFG
-				//	System.out.println("#Nodes\t= \t" + numNodes);
+			
 					if(numNodes > 0)
 					{
-						// create a CDFG object
-						
+						// create a CDFG object			
 						curCDFG = new CDFG(numNodes); // initialize the CDFG
 						
 					}
@@ -207,11 +191,9 @@ public class Scheduler {
 						
 					}
 					
-					
-					
 					if (rc_read == 5)
 					{
-						RC_FLAG = false; // all resourced read
+						RC_FLAG = false; // all resourced read, stop reading more
 					}
 				}
 				
@@ -259,35 +241,37 @@ public class Scheduler {
 						
 						System.out.println("numNodes = " + curCDFG.getNumNodes());
 						curCDFG.printCDFG();
-						
+				
 						System.out.println("Parsing Successfully Completed!");
 						// end is reached
 						// TODO: Add return functionality
 					}
 					else if(temp.equalsIgnoreCase("ASAP"))
 					{
+						operation = 1;
 						
 					}
 					else if(temp.equalsIgnoreCase("ALAP"))
 					{
-						
+						operation = 2;
 					}
 					else if(temp.equalsIgnoreCase("rc"))
 					{
 						// set a flag RC
+						operation = 3;
 						rc_read = 0;
 						RC_FLAG = true;
 					}
 					else if(temp.equalsIgnoreCase("tc1"))
 					{
-						
 						// set a flag for TC
+						operation = 4;
 						TC_FLAG = true;
 					}
 					else if(temp.equalsIgnoreCase("tc2"))
 					{
-						
 						// set a flag for TC
+						operation = 5;
 						TC_FLAG = true;
 					}
 					
@@ -302,7 +286,7 @@ public class Scheduler {
 	} catch (FileNotFoundException e){
 			System.out.println("File Not Found!");
 	} catch (IOException e) {
-		// TODO Auto-generated catch block
+			System.out.println("I/O Exception!");
 		e.printStackTrace();
 	}
 		
