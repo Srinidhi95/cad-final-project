@@ -10,8 +10,13 @@ public class Scheduler {
 	public static void main (String[] args){
 		
 		System.out.println("CAD Final Project");
+		if (args.length == 0)
+		{
+			System.out.println("You must specify and input file.");
+			System.exit(1);
+		}
+		
 		System.out.println("Filename = " + args[0]);
-
 		
 
 		
@@ -419,9 +424,6 @@ public class Scheduler {
 					nodesComplete_bool[count] = true;
 				
 					count++;
-					
-					// TODO: Fix issue with node 3 being inserted into state 2 because by the time
-					// it gets to while in state 2, node 2 has been complete.
 					
 				}
 				
