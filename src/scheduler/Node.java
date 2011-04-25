@@ -10,6 +10,8 @@ public class Node {
 	public String op; // Operation that it performs
 	public int [] conn; // Array of connections (each entry is the ID of another node)
 	
+	// TODO: Add mobility variable and methods
+	
 	public static int numOfNodes = 0;
 	
 	// TODO: Some kind of reset function for numOfNodes?

@@ -13,6 +13,8 @@ public class Scheduler {
 		System.out.println("Filename = " + args[0]);
 
 		
+
+		
 		CDFG newCDFG; // = new CDFG();
 		
 		newCDFG = readFile(args[0]); // read and parse the file
@@ -317,15 +319,20 @@ public class Scheduler {
 		
 		int numStates = inCDFG.getNumStates();
 		int numNodes = inCDFG.getNumNodes();
-		int [] nodesComplete = new int [numNodes];
 		
+		int [] nodesComplete = new int [numNodes];
 		boolean [] nodesComplete_bool = new boolean [numNodes];
+		
+		int [] nodesComplete_commit = new int [numNodes];
+		boolean [] nodesComplete_bool_commit = new boolean [numNodes];
 		
 		System.out.println("NumStates = " + numStates);
 		System.out.println("NumNodes = " + numNodes);
 	
 		int count = 0; // number of nodes completed
 		boolean dependency = false;
+		
+		// TODO: Make sure next statement returns a copy of actual object instead of just reference
 		
 		CDFG outCDFG = inCDFG; // return a different graph.
 		
@@ -343,9 +350,22 @@ public class Scheduler {
 				
 				
 			}
-			
+				
 		}
 		
+		// commit changes
+		
+		System.out.println("first node commit (before) = " + nodesComplete_bool[0]);
+		
+		
+		// TODO: Fix copy of boolean array
+		
+		System.arraycopy(nodesComplete, 0, nodesComplete_commit, 0, nodesComplete.length);
+		System.arraycopy(nodesComplete_bool, 0, nodesComplete_bool_commit, 0, nodesComplete_bool.length);
+		
+	
+		
+		System.out.println("first node commit = " + nodesComplete_bool[0]);
 		
 		// at this point, the first state (1) has been allocated.
 		
@@ -370,7 +390,7 @@ public class Scheduler {
 					for (int y = 0; y < outCDFG.nodes[j].conn.length; y++) // go through connection list
 					{
 					
-						if (!nodesComplete_bool[outCDFG.nodes[j].conn[y]])
+						if (!nodesComplete_bool_commit[outCDFG.nodes[j].conn[y]]) // check committed list
 						{
 							dependency = true; // found a connection that is not in completed list
 						}
@@ -385,10 +405,11 @@ public class Scheduler {
 					System.out.println("=======================");
 					System.out.println("dependency = " + dependency);
 					System.out.println("j =  " + j);
+					System.out.println("nodecomplete_commit?  " + nodesComplete_bool_commit[j]);
 					System.out.println("nodecomplete?  " + nodesComplete_bool[j] + "\n");
 				}
 				
-				if (dependency == false && !nodesComplete_bool[j])
+				if (dependency == false && !nodesComplete_bool_commit[j] && count < numNodes)
 				{
 					// perform this node
 					outCDFG.nodes[j].setState(i); // set to current state
@@ -406,6 +427,13 @@ public class Scheduler {
 				
 				
 			} // end node looping
+			
+			// commit changes
+			
+			System.arraycopy(nodesComplete, 0, nodesComplete_commit, 0, nodesComplete.length);
+			System.arraycopy(nodesComplete_bool, 0, nodesComplete_bool_commit, 0, nodesComplete_bool.length);
+			
+			
 		
 		} // end state looping
 		
