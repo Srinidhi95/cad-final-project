@@ -67,7 +67,7 @@ public class Node {
 	}
 	
 	
-	// TODO: Finish implementation
+	// Return true if node with ID depends on the calling node
 	public boolean dependsOn(int ID)
 	{
 		for (int i = 0; i < this.conn.length; i++)

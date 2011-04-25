@@ -11,14 +11,18 @@ public class Scheduler {
 		
 		System.out.println("CAD Final Project");
 		System.out.println("Filename = " + args[0]);
+
 		
 		CDFG newCDFG; // = new CDFG();
 		
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Incoming CDFG");
-		//newCDFG.printCDFG();
+		newCDFG.printCDFG();
 		
-		performASAP(newCDFG);
+		CDFG asapCDFG;
+		asapCDFG = performASAP(newCDFG);
+		
+		asapCDFG.printCDFG();
 		
 		//System.out.println("Operation = " + operation);
 		
@@ -308,41 +312,121 @@ public class Scheduler {
 	}
 	
 	
-	public static void performASAP(CDFG inCDFG)
+	public static CDFG performASAP(CDFG inCDFG)
 	{
-		// TODO: Change return type to CDFG
 		
 		int numStates = inCDFG.getNumStates();
 		int numNodes = inCDFG.getNumNodes();
-		//boolean DONE = false;
+		int [] nodesComplete = new int [numNodes];
 		
-		for (int i = 1; i <= numStates; i++)
+		boolean [] nodesComplete_bool = new boolean [numNodes];
+		
+		System.out.println("NumStates = " + numStates);
+		System.out.println("NumNodes = " + numNodes);
+	
+		int count = 0; // number of nodes completed
+		boolean dependency = false;
+		
+		CDFG outCDFG = inCDFG; // return a different graph.
+		
+		for (int x = 0; x < numNodes; x++)
 		{
-			/*
-			 * For every state, see if you can perform that node
-			 * Node can be performed if all nodes that have connections
-			 * to it have been performed
-			 */
-			
-			for (int j = 0; j < numNodes; j++)
+			// first check for nodes with no dependencies and perform them in the first state
+			if (outCDFG.nodes[x].dependsOn(-1))
 			{
-				/*
-				 * Go through each node in this state and see if there are any nodes that connect to it
-				 that haven't been performed yet.
-				 */
-				//Node curNode = inCDFG.nodes[j];
-				//int nodeID = curNode.getID();
-				
+				// this node has no dependencies
+				outCDFG.nodes[x].setState(1); // perform in state 1
+				nodesComplete[count] = outCDFG.nodes[x].getID(); // add to complete list
+				nodesComplete_bool[count] = true;
+				System.out.println("Processed num =  " + count);
+				count++;
 				
 				
 			}
-		
-			
-			
 			
 		}
 		
-	}
+		
+		// at this point, the first state (1) has been allocated.
+		
+		for (int i = 2; i <= numStates; i++) // start with state 2
+		{
+			/*
+			 * For every state, see if you can perform the OP at that node
+			 * Node can be performed if all nodes that it depends on are complete 
+			 */
+			
+			System.out.println("Processing State =  " + i);
+			
+			for (int j = 0; j < numNodes; j++)
+			{
+				dependency = false; // reset flag for each node
+				
+				System.out.println("j = " + j);
+				System.out.println("Conn length = " + outCDFG.nodes[j].conn.length);
+				
+				if (outCDFG.nodes[j].conn[0] != -1)
+				{
+					for (int y = 0; y < outCDFG.nodes[j].conn.length; y++) // go through connection list
+					{
+					
+						if (!nodesComplete_bool[outCDFG.nodes[j].conn[y]])
+						{
+							dependency = true; // found a connection that is not in completed list
+						}
+						
+					}
+					
+				}
+				
+				
+				if (i == 2)
+				{
+					System.out.println("=======================");
+					System.out.println("dependency = " + dependency);
+					System.out.println("j =  " + j);
+					System.out.println("nodecomplete?  " + nodesComplete_bool[j] + "\n");
+				}
+				
+				if (dependency == false && !nodesComplete_bool[j])
+				{
+					// perform this node
+					outCDFG.nodes[j].setState(i); // set to current state
+					System.out.println("Just DONE with count = " + count);
+					System.out.println("j = " + j);
+					nodesComplete[count] = outCDFG.nodes[j].getID();
+					nodesComplete_bool[count] = true;
+				
+					count++;
+					
+					// TODO: Fix issue with node 3 being inserted into state 2 because by the time
+					// it gets to while in state 2, node 2 has been complete.
+					
+				}
+				
+				
+			} // end node looping
+		
+		} // end state looping
+		
+		// Check to make sure that count = numNodes (all nodes processed)
+		
+		System.out.println("count = " + count);
+		System.out.println("numNodes = " + numNodes);
+		
+		if (count == (numNodes))
+		{
+			return outCDFG;
+		}
+		else
+		{
+			System.out.println("Error performing ASAP Optimization!");
+			System.exit(1);
+		}
+		
+		return outCDFG; // to satisfy compiler
+		
+	} // end method
 	
 	public void performALAP(CDFG inCDFG)
 	{
