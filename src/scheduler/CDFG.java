@@ -3,9 +3,9 @@ package scheduler;
 public class CDFG {
 
 	
-	// ivars
-	private Node [] nodes; // make private?
-	private String title = "";
+	// instance variables
+	public Node [] nodes;
+	private String title = "Untitled";
 	
 	private int numALU = 0;
 	private int numMUL = 0;
@@ -17,10 +17,10 @@ public class CDFG {
 	
 	private int numNodes = 0;
 	private static int ID = 0;
-	//private int states = 0;
 	
-	
-	
+	private int numStates = 0;
+
+
 	// constructor
 	public CDFG(int numberOfNodes)
 	{
@@ -121,9 +121,16 @@ public class CDFG {
 		return title;
 	}
 	
+	public int getNumStates()
+	{
+		return numStates;
+	}
+	
 	public int addNode(Node newNode, int position)
 	{
-		if(position > numNodes)
+	//	System.out.println("position = " + position);
+	//	System.out.println("numNodes = " + numNodes);
+		if(position > (numNodes - 1))
 		{
 			System.out.println("Error: CDFG only has " + numNodes + " node(s).");
 			return -1; // error
@@ -132,6 +139,10 @@ public class CDFG {
 		{
 			// add the node to the array at specified position
 			nodes[position] = newNode;
+			if (newNode.getState() > (numStates + 1))
+			{
+				numStates = (newNode.getState() + 1);
+			}
 			//System.out.println("Added Node at position: " + position);
 			//System.out.println("Node State was: " + nodes[position].getState());
 			//System.out.println("Node OP was: " + nodes[position].getOp());
@@ -153,6 +164,9 @@ public class CDFG {
 	
 	public void printCDFG()
 	{
+		System.out.println(this.getTitle());
+		System.out.println("# of States: " + this.getNumStates());
+		
 		if (nodes[0] != null)
 		{
 			for (int i = 0; i < numNodes; i++)

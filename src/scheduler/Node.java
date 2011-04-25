@@ -66,14 +66,48 @@ public class Node {
 		return conn;
 	}
 	
+	
+	// TODO: Finish implementation
+	public boolean dependsOn(int ID)
+	{
+		for (int i = 0; i < this.conn.length; i++)
+		{
+			if (conn[i] == ID)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+		
+	}
+	
 	public void printConn() // for diagnostic purposes
 	{
-		System.out.println("Connections:");
-		for (int i = 0; i < conn.length; i++)
+		String list = "";
+		
+		if (conn[0] == -1)
 		{
-			System.out.println("\t\t" + conn[i]);
+			System.out.println("No Connections.");
 		}
-		System.out.println("Number of connections = " + conn.length);
+		else
+		{
+			list = "Conns: \t\t(";
+			for (int i = 0; i < conn.length; i++)
+			{
+				if (i == (conn.length - 1))
+				{
+					list += conn[i] + ")";
+				}
+				else{
+					list += conn[i] + ",";	
+				}
+	
+			}
+			System.out.println(list);
+			System.out.println("Number of connections = " + conn.length);	
+		}
+		
 	}
 
 	

@@ -12,21 +12,28 @@ public class Scheduler {
 		System.out.println("CAD Final Project");
 		System.out.println("Filename = " + args[0]);
 		
-	
-		readFile(args[0]); // read and parse the file
-		System.out.println("Operation = " + operation);
+		CDFG newCDFG; // = new CDFG();
 		
-		// TODO: Get CDFG from function
+		newCDFG = readFile(args[0]); // read and parse the file
+		newCDFG.setTitle("Incoming CDFG");
+		//newCDFG.printCDFG();
+		
+		performASAP(newCDFG);
+		
+		//System.out.println("Operation = " + operation);
+		
 	}
 	
-	public static void readFile(String filename){
+	// Function to read and parse input file
+	
+	public static CDFG readFile(String filename){
 		
-		boolean RC_FLAG = false;
-		boolean TC_FLAG = false;
+		boolean RC_FLAG = false; // set to TRUE when reading resources
+		boolean TC_FLAG = false; // set to TRUE when reading clock cycle constraint
 		int rc_read = 0; // number of resources read
 		
 		
-		CDFG curCDFG = null;
+		CDFG curCDFG = null; 
 		Node tempNode = null;
 		int numNodes = 0;
 		String [] unitsArray; 
@@ -109,7 +116,15 @@ public class Scheduler {
 					else
 					{
 						parsedConns_int = new int [1];
-						parsedConns_int[0] = Integer.parseInt(tempConn);
+						if (tempConn.equalsIgnoreCase("x"))
+						{
+							parsedConns_int[0] = -1;
+						}
+						else
+						{
+							parsedConns_int[0] = Integer.parseInt(tempConn);	
+						}
+						
 				//		System.out.println("Conn = " + parsedConns_int[0]);
 						
 					}
@@ -185,9 +200,7 @@ public class Scheduler {
 							curCDFG.setABS(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 							
-						}
-		
-						
+						}			
 						
 					}
 					
@@ -217,7 +230,6 @@ public class Scheduler {
 				}
 				
 				
-				
 				if (lineNum > 1 && line.startsWith(".") && !RC_FLAG && !TC_FLAG)
 				{
 					//System.out.println("Starts with '.'");
@@ -240,11 +252,13 @@ public class Scheduler {
 						}
 						
 						System.out.println("numNodes = " + curCDFG.getNumNodes());
-						curCDFG.printCDFG();
+						//curCDFG.printCDFG();
 				
 						System.out.println("Parsing Successfully Completed!");
 						// end is reached
-						// TODO: Add return functionality
+						
+						return curCDFG;
+		
 					}
 					else if(temp.equalsIgnoreCase("ASAP"))
 					{
@@ -290,9 +304,64 @@ public class Scheduler {
 		e.printStackTrace();
 	}
 		
-		
+		return curCDFG;
 	}
 	
 	
+	public static void performASAP(CDFG inCDFG)
+	{
+		// TODO: Change return type to CDFG
+		
+		int numStates = inCDFG.getNumStates();
+		int numNodes = inCDFG.getNumNodes();
+		//boolean DONE = false;
+		
+		for (int i = 1; i <= numStates; i++)
+		{
+			/*
+			 * For every state, see if you can perform that node
+			 * Node can be performed if all nodes that have connections
+			 * to it have been performed
+			 */
+			
+			for (int j = 0; j < numNodes; j++)
+			{
+				/*
+				 * Go through each node in this state and see if there are any nodes that connect to it
+				 that haven't been performed yet.
+				 */
+				//Node curNode = inCDFG.nodes[j];
+				//int nodeID = curNode.getID();
+				
+				
+				
+			}
+		
+			
+			
+			
+		}
+		
+	}
+	
+	public void performALAP(CDFG inCDFG)
+	{
+		// TODO: Change return type to CDFG
+	}
+	
+	public void performRC()
+	{
+		
+	}
+	
+	public void performTC1()
+	{
+		
+	}
+	
+	public void performTC2()
+	{
+		
+	}
 
 }
