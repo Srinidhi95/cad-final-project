@@ -24,12 +24,18 @@ public class Scheduler {
 		
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Incoming CDFG");
-		newCDFG.printCDFG();
 		
-		CDFG asapCDFG;
-		asapCDFG = performASAP(newCDFG);
+		int [] mobilities = new int[newCDFG.getNumNodes()];
 		
-		asapCDFG.printCDFG();
+		
+		performRC(newCDFG, mobilities);
+		
+	//	newCDFG.printCDFG();
+		
+		//CDFG asapCDFG;
+		//asapCDFG = performASAP(newCDFG);
+		
+		//asapCDFG.printCDFG();
 		
 		//System.out.println("Operation = " + operation);
 		
@@ -153,7 +159,7 @@ public class Scheduler {
 //					System.out.println("ID \t= \t" + tempNode.getID());
 //					System.out.println("State \t= \t" + tempNode.getState());
 //					System.out.println("Op \t= \t" + tempNode.getOp());
-//	//				System.out.println("Conns \t= \t" + tempConn);
+//					System.out.println("Conns \t= \t" + tempConn);
 					
 				}	
 				
@@ -458,13 +464,216 @@ public class Scheduler {
 		
 	} // end method
 	
-	public void performALAP(CDFG inCDFG)
+	public static void performALAP(CDFG inCDFG)
 	{
 		// TODO: Change return type to CDFG
 	}
 	
-	public void performRC()
+	
+	
+	public static void performRC(CDFG inCDFG, int [] mobilities)
 	{
+		// TODO: Implement URGENCY to break ties
+		
+		System.out.println("Starting RC...");
+		
+		CDFG outCDFG = inCDFG;  // return a different CDFG
+	
+		// read in the resource list
+		int numALU = inCDFG.getALU();
+		int numMUL = inCDFG.getMUL();
+		int numMIN = inCDFG.getMIN();
+		int numMAX = inCDFG.getMAX();
+		int numABS = inCDFG.getABS();
+		
+		//
+		// reservation lists for each resource
+		// 
+		
+		int [] aluList = new int[numALU];
+		int [] mulList = new int[numMUL];
+		int [] minList = new int[numMIN];
+		int [] maxList = new int[numMAX];	
+		int [] absList = new int[numABS];
+		
+		
+		
+		int numNodes = inCDFG.getNumNodes();
+		
+		// Check mobilities array
+		
+		if (mobilities.length != numNodes)
+		{
+			System.out.println("Mobilities Array should contain " + numNodes + " elements.");
+			System.exit(1);
+		}
+		
+		boolean [] readyList = new boolean[numNodes]; // create the ready list
+		
+		// populate the ready list with nodes that do not depend on anything
+		
+		
+		for (int x = 0; x < numNodes; x++)
+		{
+			if (outCDFG.nodes[x].dependsOn(-1))
+			{
+				// add this node to the ready list
+				readyList[x] = true;
+				System.out.println("Added Node: " + x);
+						
+			}
+				
+		}
+		
+		
+		/*
+		 * Diagnostics: Print ready list
+		 */
+		
+		for (int a = 0; a < numNodes; a++)
+		{
+			System.out.println("At " + a + " : " + readyList[a]);
+		}
+		
+		/*
+		 * End Diagnostics
+		 */
+		
+		
+		
+		// TODO: Repeat for each state
+		
+		// go through readyList and figure out what resources you need
+		
+		for (int x = 0; x < numNodes; x++)
+		{
+			if (readyList[x] == true)
+			{
+				
+				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("alu"))
+				{
+					// this node needs an ALU
+					if (numALU == 0)
+					{
+						// all ALUs used -- check mobility
+						for (int y = 0; y < numALU; y++)
+						{
+							if (mobilities[x] < mobilities[aluList[y]])
+							{
+								// mobility of this node is less so it gets priority
+								// swap its ID into the aluList and remove other node from commit lists
+								
+							}
+						}
+						
+					}
+					else
+					{
+						// alu available - add this node to reservation list and to commit lists
+					}
+					
+				}
+				
+				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("mul"))
+				{
+					// this node needs a MUL
+					if (numMUL == 0)
+					{
+						// all multipliers used -- check mobility
+						for (int y = 0; y < numMUL; y++)
+						{
+							if (mobilities[x] < mobilities[mulList[y]])
+							{
+								// swap ID into mulList
+							}
+						}
+					}
+					else
+					{
+						// multiplier available - add this node to reservation list
+					}
+					
+					
+					
+				}
+				
+				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("min"))
+				{
+					// this node needs a MIN
+					if (numMIN == 0)
+					{
+						// all mins used used -- check mobility
+						for (int y = 0; y < numMIN; y++)
+						{
+							if (mobilities[x] < mobilities[minList[y]])
+							{
+								// swap ID into minList
+							}
+						}
+					}
+					else
+					{
+						// min available - add this node to reservation list
+					}
+					
+					
+				}
+				
+				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("max"))
+				{
+					// this node needs a MAX
+					if (numMAX == 0)
+					{
+						// all max used -- check mobility
+						for (int y = 0; y < numMAX; y++)
+						{
+							if (mobilities[x] < mobilities[maxList[y]])
+							{
+								// swap ID into maxList
+							}
+						}
+					}
+					else
+					{
+						// max available - add this node to reservation list
+					}
+					
+					
+				}
+				
+				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("abs"))
+				{
+					// this node needs a ABS
+					if (numABS == 0)
+					{
+						// all abs used -- check mobility
+						for (int y = 0; y < numABS; y++)
+						{
+							if (mobilities[x] < mobilities[absList[y]])
+							{
+								// swap ID into absList
+							}
+						}
+					}
+					else
+					{
+						// abs available - add this node to reservation list
+					}
+					
+					
+				}
+				
+				
+				
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
 		
 	}
 	
