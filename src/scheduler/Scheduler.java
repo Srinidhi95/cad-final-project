@@ -27,6 +27,8 @@ public class Scheduler {
 		
 		int [] mobilities = new int[newCDFG.getNumNodes()];
 		
+		mobilities[0] = 1;
+		
 		
 		performRC(newCDFG, mobilities);
 		
@@ -471,11 +473,20 @@ public class Scheduler {
 	
 	
 	
+	
+	
+	
+	
 	public static void performRC(CDFG inCDFG, int [] mobilities)
 	{
 		// TODO: Implement URGENCY to break ties
 		
 		System.out.println("Starting RC...");
+		
+		for (int b = 0; b < mobilities.length; b++)
+		{
+			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
+		}
 		
 		CDFG outCDFG = inCDFG;  // return a different CDFG
 	
@@ -495,10 +506,15 @@ public class Scheduler {
 		int [] minList = new int[numMIN];
 		int [] maxList = new int[numMAX];	
 		int [] absList = new int[numABS];
-		
-		
+	
 		
 		int numNodes = inCDFG.getNumNodes();
+		int numStates = inCDFG.getNumStates();
+		
+		// commit list
+		boolean [] commitList = new boolean[numNodes];
+		boolean [] doneList = new boolean[numNodes]; 
+		
 		
 		// Check mobilities array
 		
@@ -527,12 +543,18 @@ public class Scheduler {
 		
 		
 		/*
-		 * Diagnostics: Print ready list
+		 * Diagnostics: Print ready & commit lists
 		 */
 		
 		for (int a = 0; a < numNodes; a++)
 		{
-			System.out.println("At " + a + " : " + readyList[a]);
+			System.out.println("Ready  " + a + " : " + readyList[a]);
+			
+		}
+		
+		for (int b = 0; b < numNodes; b++)
+		{
+			System.out.println("Commit " + b + ": " + commitList[b]);
 		}
 		
 		/*
@@ -541,32 +563,72 @@ public class Scheduler {
 		
 		
 		// repeat for each state
-	for (int i = 1; i <= outCDFG.getNumStates(); i++)
+		
+		// TODO: need to consider if number of states increases, perhaps use while loop
+		
+		int curState;
+		
+	for (curState = 1; curState <= numStates; curState++)
 	{
 		
-		System.out.println("Current State: " + i);
+		// reset resources
+		
+		numALU = inCDFG.getALU();
+		numMUL = inCDFG.getMUL();
+		numMIN = inCDFG.getMIN();
+		numMAX = inCDFG.getMAX();
+		numABS = inCDFG.getABS();
+		
+		System.out.println("Current State: " + curState);
 		
 		// TODO: Add any ready nodes to the ready list
 		
 		// go through readyList and figure out what resources you need
 		
-		for (int x = 0; x < numNodes; x++)
+		for (int cNode = 0; cNode < numNodes; cNode++)
 		{
-			if (readyList[x] == true)
+			if (readyList[cNode] == true)
 			{
 				
-				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("alu"))
+				if (outCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu"))
 				{
 					// this node needs an ALU
 					if (numALU == 0)
 					{
+						System.out.println("No ALUs available");
 						// all ALUs used -- check mobility
-						for (int y = 0; y < numALU; y++)
+						for (int y = 0; y <= numALU; y++)
 						{
-							if (mobilities[x] < mobilities[aluList[y]])
+							
+							System.out.println("Comparing " + cNode + " and " + aluList[y]);
+							
+							if (mobilities[cNode] < mobilities[aluList[y]])
 							{
+								System.out.println("This has higher priority - SWAP");
 								// mobility of this node is less so it gets priority
 								// swap its ID into the aluList and remove other node from commit lists
+								
+								System.out.println("node swapped out: " + aluList[y]);
+								System.out.println("commit before: " + commitList[aluList[y]]);
+								
+								aluList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
+								commitList[aluList[y]] = false; // remove old node from commit list
+								
+								
+								
+								System.out.println("commit after1: " + commitList[aluList[y]]);
+								
+								// TODO: Problem is caused by copying of elements
+								// since boolean is passed by reference
+								// ** Need to copy without using '=' **
+							
+								System.out.println("node swapped in: " + outCDFG.nodes[cNode].getID());
+								
+					
+								
+								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
+								
+								System.out.println("commit after: " + commitList[aluList[y]]);
 								
 							}
 						}
@@ -575,11 +637,24 @@ public class Scheduler {
 					else
 					{
 						// alu available - add this node to reservation list and to commit lists
+						
+						System.out.println("numALU = " + numALU);
+						System.out.println("alulistlength = " + aluList.length);
+						
+						aluList[aluList.length - numALU] = outCDFG.nodes[cNode].getID(); // add to reservation list
+						
+						System.out.println("Added " + outCDFG.nodes[cNode].getID() + " to alu list at " + (aluList.length - numALU));
+						
+						numALU--; // reduce number of available ALUs
+						
+						commitList[outCDFG.nodes[cNode].getID()] = true; // add to commit list
+						
+						
 					}
 					
 				}
 				
-				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("mul"))
+				if (outCDFG.nodes[cNode].getOp().equalsIgnoreCase("mul"))
 				{
 					// this node needs a MUL
 					if (numMUL == 0)
@@ -587,7 +662,7 @@ public class Scheduler {
 						// all multipliers used -- check mobility
 						for (int y = 0; y < numMUL; y++)
 						{
-							if (mobilities[x] < mobilities[mulList[y]])
+							if (mobilities[cNode] < mobilities[mulList[y]])
 							{
 								// swap ID into mulList
 							}
@@ -596,13 +671,20 @@ public class Scheduler {
 					else
 					{
 						// multiplier available - add this node to reservation list
+						mulList[mulList.length - numMUL] = outCDFG.nodes[cNode].getID();
+						
+						numMUL--;
+						
+						commitList[outCDFG.nodes[cNode].getID()] = true;
+						
+						
 					}
 					
 					
 					
 				}
 				
-				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("min"))
+				if (outCDFG.nodes[cNode].getOp().equalsIgnoreCase("min"))
 				{
 					// this node needs a MIN
 					if (numMIN == 0)
@@ -610,7 +692,7 @@ public class Scheduler {
 						// all mins used used -- check mobility
 						for (int y = 0; y < numMIN; y++)
 						{
-							if (mobilities[x] < mobilities[minList[y]])
+							if (mobilities[cNode] < mobilities[minList[y]])
 							{
 								// swap ID into minList
 							}
@@ -619,12 +701,18 @@ public class Scheduler {
 					else
 					{
 						// min available - add this node to reservation list
+						minList[minList.length - numMIN]  = outCDFG.nodes[cNode].getID();
+						
+						numMIN--;
+						
+						commitList[outCDFG.nodes[cNode].getID()] = true;
+						
 					}
 					
 					
 				}
 				
-				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("max"))
+				if (outCDFG.nodes[cNode].getOp().equalsIgnoreCase("max"))
 				{
 					// this node needs a MAX
 					if (numMAX == 0)
@@ -632,7 +720,7 @@ public class Scheduler {
 						// all max used -- check mobility
 						for (int y = 0; y < numMAX; y++)
 						{
-							if (mobilities[x] < mobilities[maxList[y]])
+							if (mobilities[cNode] < mobilities[maxList[y]])
 							{
 								// swap ID into maxList
 							}
@@ -641,12 +729,18 @@ public class Scheduler {
 					else
 					{
 						// max available - add this node to reservation list
+						maxList[maxList.length - numMAX] = outCDFG.nodes[cNode].getID();
+						
+						numMAX--;
+						
+						commitList[outCDFG.nodes[cNode].getID()] = true;
+						
 					}
 					
 					
 				}
 				
-				if (outCDFG.nodes[x].getOp().equalsIgnoreCase("abs"))
+				if (outCDFG.nodes[cNode].getOp().equalsIgnoreCase("abs"))
 				{
 					// this node needs a ABS
 					if (numABS == 0)
@@ -654,7 +748,7 @@ public class Scheduler {
 						// all abs used -- check mobility
 						for (int y = 0; y < numABS; y++)
 						{
-							if (mobilities[x] < mobilities[absList[y]])
+							if (mobilities[cNode] < mobilities[absList[y]])
 							{
 								// swap ID into absList
 							}
@@ -663,6 +757,11 @@ public class Scheduler {
 					else
 					{
 						// abs available - add this node to reservation list
+						absList[absList.length - numABS] = outCDFG.nodes[cNode].getID();
+						numABS--;
+						commitList[outCDFG.nodes[cNode].getID()] = true;
+						
+						
 					}
 					
 					
@@ -673,9 +772,77 @@ public class Scheduler {
 			}
 		}
 		
+		
+		/*
+		 * Diagnostics: Print ready & commit lists
+		 */
+		
+	//	System.out.println("Available ALUs = " + numALU);
+		
+		for (int a = 0; a < numNodes; a++)
+		{
+			System.out.println("Ready(before)  " + a + " : " + readyList[a]);
+			
+		}
+		
+		for (int b = 0; b < numNodes; b++)
+		{
+			System.out.println("Commit(before) " + b + ": " + commitList[b]);
+		}
+		
+		/*
+		 * End Diagnostics
+		 */
+		
 		// TODO: commit nodes that can be performed this state and remove them from the ready list
 		
+		// To commit, change state of each node in the commit list to the current state
+		// Then remove it from ready & commit lists and add it to the done list
 		
+		for (int x = 0; x < numNodes; x++)
+		{
+			if (commitList[x] == true)
+			{
+				// commit this node
+				outCDFG.nodes[x].setState(curState);
+				commitList[x] = false;
+				readyList[x] = false;
+				doneList[x]	 = true;
+					
+			}
+			
+			
+		}
+		
+		
+		
+
+		/*
+		 * Diagnostics: Print ready & commit lists
+		 */
+		
+		System.out.println("Available ALUs = " + numALU);
+		
+		for (int a = 0; a < numNodes; a++)
+		{
+			System.out.println("Ready(after)  " + a + " : " + readyList[a]);
+			
+		}
+		
+		for (int b = 0; b < numNodes; b++)
+		{
+			System.out.println("Commit(after) " + b + ": " + commitList[b]);
+		}
+		
+		for (int c = 0; c < numNodes; c++)
+		{
+			System.out.println("Done " + c + ": " + doneList[c]);
+			
+		}
+		
+		/*
+		 * End Diagnostics
+		 */
 		
 		
 		
@@ -687,7 +854,7 @@ public class Scheduler {
 		
 		
 		
-	}
+	} // end method
 	
 	public void performTC1()
 	{
