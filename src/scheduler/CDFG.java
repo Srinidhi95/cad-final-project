@@ -18,7 +18,7 @@ public class CDFG {
 	private int numNodes = 0;
 	private static int ID = 0;
 	
-	private int numStates = 0;
+	private int numStates = 1;
 
 
 	// constructor
@@ -139,10 +139,12 @@ public class CDFG {
 		{
 			// add the node to the array at specified position
 			nodes[position] = newNode;
-			if (newNode.getState() > (numStates + 1))
+			
+			if (newNode.getState() > numStates)
 			{
-				numStates = (newNode.getState() + 1);
+				numStates = newNode.getState();
 			}
+			
 			//System.out.println("Added Node at position: " + position);
 			//System.out.println("Node State was: " + nodes[position].getState());
 			//System.out.println("Node OP was: " + nodes[position].getOp());
