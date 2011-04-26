@@ -170,7 +170,7 @@ public class Scheduler {
 					// read resource constraints
 					
 					
-					System.out.println("Reading RC constraints.");
+					//System.out.println("Reading RC constraints.");
 					
 					unitsArray = line.split("=");
 					
@@ -182,7 +182,7 @@ public class Scheduler {
 						
 						if(unitsArray[0].equalsIgnoreCase("alu"))
 						{
-							System.out.println("Read ALU");
+							//System.out.println("Read ALU");
 							curCDFG.setALU(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 							
@@ -190,14 +190,14 @@ public class Scheduler {
 						
 						if (unitsArray[0].equalsIgnoreCase("mul"))
 						{
-							System.out.println("Read Multiplier");
+							//System.out.println("Read Multiplier");
 							curCDFG.setMUL(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 						}
 						
 						if(unitsArray[0].equalsIgnoreCase("min"))
 						{
-							System.out.println("Read MIN");
+							//System.out.println("Read MIN");
 							curCDFG.setMIN(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 							
@@ -205,7 +205,7 @@ public class Scheduler {
 						
 						if(unitsArray[0].equalsIgnoreCase("max"))
 						{
-							System.out.println("Read MAX");
+							//System.out.println("Read MAX");
 							curCDFG.setMAX(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 							
@@ -213,7 +213,7 @@ public class Scheduler {
 						
 						if(unitsArray[0].equalsIgnoreCase("abs"))
 						{
-							System.out.println("Read ABS");
+							//System.out.println("Read ABS");
 							curCDFG.setABS(Integer.parseInt(unitsArray[1]));
 							rc_read++;
 							
@@ -540,8 +540,13 @@ public class Scheduler {
 		 */
 		
 		
+		// repeat for each state
+	for (int i = 1; i <= outCDFG.getNumStates(); i++)
+	{
 		
-		// TODO: Repeat for each state
+		System.out.println("Current State: " + i);
+		
+		// TODO: Add any ready nodes to the ready list
 		
 		// go through readyList and figure out what resources you need
 		
@@ -668,6 +673,13 @@ public class Scheduler {
 			}
 		}
 		
+		// TODO: commit nodes that can be performed this state and remove them from the ready list
+		
+		
+		
+		
+		
+	} // end state loop
 		
 		
 		
