@@ -25,12 +25,33 @@ public class Scheduler {
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Incoming CDFG");
 		
+		//newCDFG.printCDFG();
+		
+		CDFG alapCDFG = performALAP(newCDFG);
+		
+		alapCDFG.printCDFG();
+		
+
+		
+//		CDFG asapCDFG;
+//		CDFG alapCDFG;
+//		
+//		// calculates mobilities -- commented out until ALAP is done
+//		
+//		int [] mobilities = new int [newCDFG.getNumNodes()];
+//		
+//		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
+//		{
+//			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
+//			
+//		}
+		
 		int [] mobilities = new int[newCDFG.getNumNodes()];
 		
 		mobilities[0] = 1;
 		
 		
-		performRC(newCDFG, mobilities);
+		//performRC(newCDFG, mobilities);
 		
 	//	newCDFG.printCDFG();
 		
@@ -466,9 +487,90 @@ public class Scheduler {
 		
 	} // end method
 	
-	public static void performALAP(CDFG inCDFG)
+	
+	
+	
+	
+	public static CDFG performALAP(CDFG inCDFG)
 	{
-		// TODO: Change return type to CDFG
+	
+		
+		int numStates = inCDFG.getNumStates();
+		int numNodes = inCDFG.getNumNodes();
+		
+		CDFG outCDFG = inCDFG;
+		
+		// commit and done lists
+		boolean [] commitList = new boolean[numNodes];
+		boolean [] doneList = new boolean[numNodes];
+		
+		boolean C_FLAG = true; // commit if this flag is true
+		
+		
+		for (int curState = (numStates - 1); curState > 0; curState--)
+		{
+			/*
+			 * For every state starting with the last, go through every node
+			 * and only commit those that do not have anything depending on them that
+			 * hasn't already been committed
+			 */
+			
+			
+			System.out.println("Current State: " + curState);
+			
+			// reset the flag
+			C_FLAG = true;
+			
+			for (int cNode = 0; cNode < numNodes; cNode++)
+			{
+				/*
+				 * For this node, loop through nodes and check if they depend on me
+				 * If none do (or if they do and have been committed) then commit this node 
+				 */
+				
+				// reset the flag
+				C_FLAG = true;
+				
+				for (int i = 0; i < numNodes; i++)
+				{
+					// call dependsOn(i) and check to see if it's true
+					if (outCDFG.dependency(cNode, i))
+					{
+						if (doneList[i] == false)
+						{
+							// this node is not complete
+							C_FLAG = false; // cannot commit this node
+						}
+					}
+					
+					
+				}
+				
+				// if C_FLAG is still true, then commit this node
+				
+				if (C_FLAG)
+				{
+					// commit the node
+					commitList[cNode] = true;
+					outCDFG.nodes[cNode].setState(curState); // change state number to current state
+					
+					
+				}
+				
+				
+				
+			} // end node loop
+			
+			// finalize commits
+			
+			System.arraycopy(commitList, 0, doneList, 0, numNodes); 
+			
+			
+			
+		} // end state loop
+		
+		return outCDFG;
+		
 	}
 	
 	
@@ -618,12 +720,10 @@ public class Scheduler {
 								
 								System.out.println("commit after1: " + commitList[aluList[y]]);
 								
-								// TODO: Problem is caused by copying of elements
-								// since boolean is passed by reference
-								// ** Need to copy without using '=' **
+								// TODO: Problem is that cNode.getID is = to aluList[y]
 							
 								System.out.println("node swapped in: " + outCDFG.nodes[cNode].getID());
-								
+								System.out.println("alulist[y] = " + aluList[y]);
 					
 								
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
