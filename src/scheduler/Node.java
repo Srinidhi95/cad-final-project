@@ -43,10 +43,6 @@ public class Node {
 		op = newOP;
 	}
 	
-	public void addConn (int newConn)
-	{
-		// TODO: Add connection to existing array
-	}
 	
 	public int getID()
 	{
@@ -68,6 +64,12 @@ public class Node {
 		return conn;
 	}
 	
+	
+	public int numConns()
+	{
+		return this.conn.length;
+		
+	}
 	
 	// Return true if node with ID depends on the calling node
 	public boolean dependsOn(int ID)

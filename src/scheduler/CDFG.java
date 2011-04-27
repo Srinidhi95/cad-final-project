@@ -185,6 +185,25 @@ public class CDFG {
 		
 	}
 	
+	
+	public boolean dependency(int ID_1, int ID_2)
+	{
+		// Given ID_1 of a node, does node with ID_2 depend on it?
+		
+		// Get number of connections of parent node
+		int connLength = this.nodes[ID_2].numConns();
+		for (int i = 0; i < connLength; i++)
+		{
+			if (this.nodes[ID_2].conn[i] == ID_1)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+		
+		
+	}
 
 	
 }
