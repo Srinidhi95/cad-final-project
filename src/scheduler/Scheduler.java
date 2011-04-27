@@ -507,16 +507,17 @@ public class Scheduler {
 		boolean C_FLAG = true; // commit if this flag is true
 		
 		
-		for (int curState = (numStates - 1); curState > 0; curState--)
+		for (int curState = numStates; curState > 0; curState--)
 		{
 			/*
 			 * For every state starting with the last, go through every node
 			 * and only commit those that do not have anything depending on them that
 			 * hasn't already been committed
 			 */
-			
+			System.out.println("===================");
 			
 			System.out.println("Current State: " + curState);
+			
 			
 			// reset the flag
 			C_FLAG = true;
@@ -530,6 +531,9 @@ public class Scheduler {
 				
 				// reset the flag
 				C_FLAG = true;
+				
+				if (!doneList[cNode])
+				{
 				
 				for (int i = 0; i < numNodes; i++)
 				{
@@ -551,6 +555,15 @@ public class Scheduler {
 				if (C_FLAG)
 				{
 					// commit the node
+					
+					System.out.println("Committing: " + cNode + " to state " + curState);
+					
+					for (int x = 0; x < numNodes; x++)
+					{
+						System.out.println("Done " + x + ": " + doneList[x]);
+					}
+					
+					
 					commitList[cNode] = true;
 					outCDFG.nodes[cNode].setState(curState); // change state number to current state
 					
@@ -565,7 +578,7 @@ public class Scheduler {
 			
 			System.arraycopy(commitList, 0, doneList, 0, numNodes); 
 			
-			
+			}
 			
 		} // end state loop
 		
