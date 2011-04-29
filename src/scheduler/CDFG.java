@@ -18,7 +18,9 @@ public class CDFG {
 	private int numNodes = 0;
 	private static int ID = 0;
 	
-	private int numStates = 1;
+	private int numStates = 1; // each CDFG must have at least 1 state
+	
+	
 
 
 	// constructor
@@ -40,6 +42,17 @@ public class CDFG {
 	{
 		return numCLK;
 	}
+	
+	public int getState()
+	{
+		return numStates;
+	}
+	
+	public void setState(int newState)
+	{
+		numStates = newState;
+	}
+	
 	
 	public void setResources(int alu, int mul, int min, int max, int abs)
 	{
@@ -139,11 +152,6 @@ public class CDFG {
 		{
 			// add the node to the array at specified position
 			nodes[position] = newNode;
-			
-			if (newNode.getState() > numStates)
-			{
-				numStates = newNode.getState();
-			}
 			
 			//System.out.println("Added Node at position: " + position);
 			//System.out.println("Node State was: " + nodes[position].getState());
