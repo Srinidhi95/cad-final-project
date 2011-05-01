@@ -32,6 +32,26 @@ public class CDFG {
 		ID++; // needed?
 	}
 	
+	public CDFG copy()
+	{
+		int numNodes = this.getNumNodes();
+		int numStates = this.getNumStates();
+		
+		CDFG outCDFG = new CDFG(numNodes); // create a blank CDFG with number of nodes
+		
+		for (int i = 0; i < numNodes; i++)
+		{
+			outCDFG.addNode(this.nodes[i].copy(), i); // add a copy of each node
+		}
+		
+		outCDFG.setResources(this.getALU(), this.getMUL(), this.getMIN(), this.getMAX(), this.getABS());
+		outCDFG.setCLK(this.getCLK());
+		outCDFG.setTitle(this.getTitle());
+		outCDFG.setState(numStates);
+		
+		return outCDFG;
+		
+	}
 	
 	public void setCLK(int clk)
 	{
@@ -163,11 +183,11 @@ public class CDFG {
 	
 	public void printResources()
 	{
-		System.out.println("Number of ALUs \t=\t " + this.getALU());
-		System.out.println("Number of Mult \t=\t " + this.getMUL());
-		System.out.println("Number of MIN \t=\t " + this.getMIN());
-		System.out.println("Number of MAX \t=\t " + this.getMIN());
-		System.out.println("Number of ABS \t=\t " + this.getABS());
+		System.out.println("# of ALUs \t=\t " + this.getALU());
+		System.out.println("# of Mult \t=\t " + this.getMUL());
+		System.out.println("# of MIN \t=\t " + this.getMIN());
+		System.out.println("# of MAX \t=\t " + this.getMIN());
+		System.out.println("# of ABS \t=\t " + this.getABS());
 		System.out.println("Clock Cycles \t=\t " + this.getCLK());
 	
 	}

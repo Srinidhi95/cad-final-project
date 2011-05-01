@@ -28,6 +28,35 @@ public class Node {
 		//numOfNodes++;
 	}
 	
+	
+	// Second constructor with no connList (set to -1 by default)
+	public Node (int initID, int initState, String initOp)
+	{
+		state = initState;
+		op = initOp;
+		ID = initID;
+		
+		int[] connList = new int[1];
+		connList[0] = -1;
+		conn = connList;
+		
+	}
+	
+	public Node copy()
+	{
+		
+		int [] newList = new int [conn.length];
+		
+		for (int i = 0; i < conn.length; i++)
+		{
+			newList[i] = this.conn[i];
+		}
+		
+		
+		Node outNode = new Node (this.getID(), this.getState(), this.getOp(), newList);
+		return outNode;
+	}
+	
 	public void setID (int newID)
 	{
 		ID = newID;
@@ -92,11 +121,11 @@ public class Node {
 		
 		if (conn[0] == -1)
 		{
-			System.out.println("No Connections.");
+			System.out.println("No Dependencies.");
 		}
 		else
 		{
-			list = "Conns: \t\t(";
+			list = "Dep.: \t\t(";
 			for (int i = 0; i < conn.length; i++)
 			{
 				if (i == (conn.length - 1))
@@ -109,7 +138,7 @@ public class Node {
 	
 			}
 			System.out.println(list);
-			System.out.println("Number of connections = " + conn.length);	
+			System.out.println("# of Dependencies = " + conn.length);	
 		}
 		
 	}
