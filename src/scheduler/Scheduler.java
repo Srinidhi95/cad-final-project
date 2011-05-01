@@ -30,14 +30,17 @@ public class Scheduler {
 		
 		CDFG asapCDFG;
 		asapCDFG = newCDFG.copy();
-		
 		asapCDFG = performASAP(asapCDFG);
-		//CDFG alapCDFG = performALAP(newCDFG);
+		
+		
+		CDFG alapCDFG;
+		alapCDFG = asapCDFG.copy();
+		alapCDFG = performALAP(alapCDFG);
 		
 		
 		newCDFG.printCDFG();
 		asapCDFG.printCDFG();
-		//alapCDFG.printCDFG();
+		alapCDFG.printCDFG();
 		
 		
 		// TODO: Shift ALAP schedule up if needed
@@ -45,20 +48,18 @@ public class Scheduler {
 		
 		// calculates mobilities
 		
-//		int [] mobilities = new int [newCDFG.getNumNodes()];
-//		
-//		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
-//		{
-//			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
-//			System.out.println("Mobility of " + c + "= " + mobilities[c]);
-//			
-//		}
+		int [] mobilities = new int [newCDFG.getNumNodes()];
+		
+		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
+		{
+			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
+			System.out.println("Mobility of " + c + ": " + mobilities[c]);
+		}
 		
 		
+	
 		
-		int [] mobilities = new int[newCDFG.getNumNodes()];
-		
-		mobilities[0] = 1;
+//		mobilities[0] = 1;
 		
 		
 //		performRC(newCDFG, mobilities);
@@ -407,7 +408,7 @@ public class Scheduler {
 		
 		while (count < numNodes)
 		{
-			System.out.println("The count is: " + count);
+//			System.out.println("The count is: " + count);
 			
 			
 			ACTION_FLAG = false;
@@ -435,15 +436,6 @@ public class Scheduler {
 				}
 				
 				
-				if (count == -1) // disabled
-				{
-					System.out.println("=======================");
-					System.out.println("dependency = " + dependency);
-					System.out.println("j =  " + j);
-					System.out.println("nodecomplete_commit?  " + nodesComplete_bool_commit[j]);
-					System.out.println("nodecomplete?  " + nodesComplete_bool[j] + "\n");
-				}
-				
 				if (dependency == false && !nodesComplete_bool_commit[j] && count < numNodes)
 				{
 					// perform this node
@@ -458,8 +450,6 @@ public class Scheduler {
 					ACTION_FLAG = true;
 				
 					count++;
-					
-					
 					
 				}
 				
@@ -482,9 +472,6 @@ public class Scheduler {
 		
 		// Check to make sure that count = numNodes (all nodes processed)
 		
-		System.out.println("count = " + count);
-		System.out.println("numNodes = " + numNodes);
-		System.out.println("Number of states = " + numStates);
 		
 		if (count == (numNodes))
 		{
@@ -534,9 +521,10 @@ public class Scheduler {
 			 * and only commit those that do not have anything depending on them that
 			 * hasn't already been committed
 			 */
-			System.out.println("===================");
 			
-			System.out.println("Current State: " + curState);
+//			System.out.println("===================");
+			
+//			System.out.println("Current State: " + curState);
 			
 			
 			// reset the flag
@@ -576,12 +564,12 @@ public class Scheduler {
 				{
 					// commit the node
 					
-					System.out.println("Committing: " + cNode + " to state " + curState);
-					
-					for (int x = 0; x < numNodes; x++)
-					{
-						System.out.println("Done " + x + ": " + doneList[x]);
-					}
+//					System.out.println("Committing: " + cNode + " to state " + curState);
+//					
+//					for (int x = 0; x < numNodes; x++)
+//					{
+//						System.out.println("Done " + x + ": " + doneList[x]);
+//					}
 					
 					
 					commitList[cNode] = true;
