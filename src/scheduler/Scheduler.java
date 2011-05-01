@@ -25,26 +25,23 @@ public class Scheduler {
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Original CDFG");
 		
-//		newCDFG.printCDFG();
-		System.out.println("Number of states = " + newCDFG.getState());
 		
+		System.out.println("Number of states = " + newCDFG.getState()); // Should be 1 before ASAP/ALAP
+		
+		CDFG asapCDFG;
+		asapCDFG = newCDFG.copy();
+		
+		asapCDFG = performASAP(asapCDFG);
 		//CDFG alapCDFG = performALAP(newCDFG);
 		
-		CDFG asapCDFG = performASAP(newCDFG);
 		
+		newCDFG.printCDFG();
 		asapCDFG.printCDFG();
-		
 		//alapCDFG.printCDFG();
 		
 		
 		// TODO: Shift ALAP schedule up if needed
-		
-		/*
-		 * TODO: CDFG objects are being assigned by reference instead of being copied
-		 * Need to manually copy them after creating a new instance of the object
-		 * Or find a method that will do an object copy rather than just assigning a pointer
-		 */
-		
+	
 		
 		// calculates mobilities
 		
@@ -80,8 +77,6 @@ public class Scheduler {
 	 * Function to read and parse input file
 	 * Takes in a String filename and returns a CDFG object
 	 */
-	
-	// TODO: *** Removing the state counting variable broke this function ***
 	
 	public static CDFG readFile(String filename){
 		
@@ -148,7 +143,7 @@ public class Scheduler {
 					int [] parsedConns_int = null;
 					
 					tempID = Integer.parseInt(curNode[0]); 
-					//tempState = Integer.parseInt(curNode[1]); // TODO: Should not read in state -- calculated later
+					//tempState = Integer.parseInt(curNode[1]);
 					tempOp = curNode[1];
 					tempConn = curNode[2];
 					
@@ -346,11 +341,10 @@ public class Scheduler {
 	
 	public static CDFG performASAP(CDFG inCDFG)
 	{
-		// TODO: Does not work if a node with a lower ID depends on a node with a higher ID
 		
 		// int numStates = inCDFG.getNumStates();
 		int numNodes = inCDFG.getNumNodes();
-		int numStates = 0; // number of states initially 1
+		int numStates = 0; // number of states initially 0
 		
 		int [] nodesComplete = new int [numNodes];
 		boolean [] nodesComplete_bool = new boolean [numNodes];
@@ -358,17 +352,17 @@ public class Scheduler {
 		int [] nodesComplete_commit = new int [numNodes];
 		boolean [] nodesComplete_bool_commit = new boolean [numNodes];
 		
-	//	System.out.println("NumStates = " + numStates);
-//		System.out.println("NumNodes = " + numNodes);
+		//	System.out.println("NumStates = " + numStates);
+		//	System.out.println("NumNodes = " + numNodes);
 	
 		int count = 0; // number of nodes completed
 		boolean dependency = false;
 		
 		boolean ACTION_FLAG = false; // true if a node was committed
 		
-		// TODO: Make sure next statement returns a copy of actual object instead of just reference
 		
-		CDFG outCDFG = inCDFG; // return a different graph.
+		
+		CDFG outCDFG = inCDFG;
 		outCDFG.setTitle("ASAP CDFG");
 		
 		for (int x = 0; x < numNodes; x++)
@@ -389,13 +383,13 @@ public class Scheduler {
 				
 		}
 		
+		
+		
 		// commit changes
 		
 		//System.out.println("first node commit (before) = " + nodesComplete_bool[0]);
 		
-		
-		
-		
+	
 		if (ACTION_FLAG)
 		{
 			System.arraycopy(nodesComplete, 0, nodesComplete_commit, 0, nodesComplete.length);
@@ -403,7 +397,7 @@ public class Scheduler {
 		}
 	
 		
-	//	System.out.println("first node commit = " + nodesComplete_bool[0]);
+		//	System.out.println("first node commit = " + nodesComplete_bool[0]);
 		
 		// at this point, the first state (1) has been allocated.
 		
@@ -415,7 +409,8 @@ public class Scheduler {
 		{
 			System.out.println("The count is: " + count);
 			
-		ACTION_FLAG = false;
+			
+			ACTION_FLAG = false;
 //			System.out.println("Currently at State =  " + numStates);
 			
 			for (int j = 0; j < numNodes; j++)
@@ -454,11 +449,12 @@ public class Scheduler {
 					// perform this node
 		
 					outCDFG.nodes[j].setState(numStates); // set to current state
-					System.out.println("Just completed " + j + " with state = " + numStates);
+//					System.out.println("Just completed " + j + " with state = " + numStates);
+//					System.out.println("Count before committing: " + count);
 //					System.out.println("j = " + j);
 					
-					nodesComplete[count] = outCDFG.nodes[j].getID();
-					nodesComplete_bool[count] = true;
+					nodesComplete[j] = outCDFG.nodes[j].getID();
+					nodesComplete_bool[j] = true;
 					ACTION_FLAG = true;
 				
 					count++;
@@ -518,7 +514,7 @@ public class Scheduler {
 	{
 	
 		
-		int numStates = inCDFG.getNumStates();
+		int numStates = inCDFG.getNumStates(); // same number of states as ASAP
 		int numNodes = inCDFG.getNumNodes();
 		
 		CDFG outCDFG = inCDFG;
