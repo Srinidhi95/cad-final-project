@@ -7,7 +7,8 @@ public class Scheduler {
 	
 	public static int operation = 0; // 1 = ASAP, 2 = ALAP, 3 = RC, 4 = TC1, 5 = TC2
 	
-	public static void main (String[] args){
+	public static void main (String[] args)
+	{
 		
 		System.out.println("CAD Final Project");
 		if (args.length == 0)
@@ -37,15 +38,13 @@ public class Scheduler {
 		alapCDFG = asapCDFG.copy();
 		alapCDFG = performALAP(alapCDFG);
 		
+
 		
-		newCDFG.printCDFG();
-		asapCDFG.printCDFG();
-		alapCDFG.printCDFG();
+//		newCDFG.printCDFG();
+//		asapCDFG.printCDFG();
+//		alapCDFG.printCDFG();
 		
-		
-		// TODO: Shift ALAP schedule up if needed
-	
-		
+
 		// calculates mobilities
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
@@ -53,24 +52,22 @@ public class Scheduler {
 		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
 		{
 			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
-			System.out.println("Mobility of " + c + ": " + mobilities[c]);
+//			System.out.println("Mobility of " + c + ": " + mobilities[c]);
 		}
 		
+
+		CDFG rcCDFG;
+		rcCDFG = asapCDFG.copy();
+		performRC(rcCDFG, mobilities);
+		rcCDFG.printCDFG();
+
 		
-	
-		
-//		mobilities[0] = 1;
-		
-		
-//		performRC(newCDFG, mobilities);
-		
-	
-		
-		
-		
+
 		//System.out.println("Operation = " + operation);
 		
 	}
+	
+	
 	
 	
 	
@@ -600,7 +597,7 @@ public class Scheduler {
 	
 	
 	
-	public static void performRC(CDFG inCDFG, int [] mobilities)
+	public static CDFG performRC(CDFG inCDFG, int [] mobilities)
 	{
 		// TODO: Implement URGENCY to break ties
 		
@@ -611,7 +608,8 @@ public class Scheduler {
 			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
 		}
 		
-		CDFG outCDFG = inCDFG;  // return a different CDFG
+		CDFG outCDFG = inCDFG;
+		outCDFG.setTitle("RC CDFG");
 	
 		// read in the resource list
 		int numALU = inCDFG.getALU();
@@ -648,9 +646,9 @@ public class Scheduler {
 		}
 		
 		boolean [] readyList = new boolean[numNodes]; // create the ready list
+		boolean dependency; 
 		
 		// populate the ready list with nodes that do not depend on anything
-		
 		
 		for (int x = 0; x < numNodes; x++)
 		{
@@ -689,9 +687,13 @@ public class Scheduler {
 		
 		// TODO: need to consider if number of states increases, perhaps use while loop
 		
-		int curState;
+		int curState = 1;
 		
-	for (curState = 1; curState <= numStates; curState++)
+		int count = 0;
+		
+		while (count < numNodes)
+		
+//	for (curState = 1; curState <= numStates; curState++)
 	{
 		
 		// reset resources
@@ -702,9 +704,39 @@ public class Scheduler {
 		numMAX = inCDFG.getMAX();
 		numABS = inCDFG.getABS();
 		
+		System.out.println("---------------------");
 		System.out.println("Current State: " + curState);
 		
-		// TODO: Add any ready nodes to the ready list
+		
+		// Add any ready nodes to the ready list
+		
+		for (int i = 0; i < numNodes; i++)
+		{
+			// Go through each node and add it to the ready list if all its dependencies have been committed
+			dependency = false;
+			
+			if ((outCDFG.nodes[i].conn[0] != -1) && !doneList[i])
+			{
+				for (int j = 0; j < outCDFG.nodes[i].conn.length; j++)
+				{
+					if (!doneList[outCDFG.nodes[i].conn[j]])
+					{
+						dependency = true;
+					}
+				}
+			}
+			
+			
+			System.out.println("Dependency = " + dependency);
+			if (!dependency && !doneList[i])
+			{
+				// no dependencies found
+				readyList[i] = true; // add to the ready list
+				System.out.println("Added " + i + " to readylist");
+			}
+			
+		}
+		
 		
 		// go through readyList and figure out what resources you need
 		
@@ -724,6 +756,7 @@ public class Scheduler {
 						{
 							
 							System.out.println("Comparing " + cNode + " and " + aluList[y]);
+							System.out.println("y=" + y);
 							
 							if (mobilities[cNode] < mobilities[aluList[y]])
 							{
@@ -915,7 +948,6 @@ public class Scheduler {
 		 * End Diagnostics
 		 */
 		
-		// TODO: commit nodes that can be performed this state and remove them from the ready list
 		
 		// To commit, change state of each node in the commit list to the current state
 		// Then remove it from ready & commit lists and add it to the done list
@@ -929,6 +961,7 @@ public class Scheduler {
 				commitList[x] = false;
 				readyList[x] = false;
 				doneList[x]	 = true;
+				count++;
 					
 			}
 			
@@ -965,13 +998,13 @@ public class Scheduler {
 		 * End Diagnostics
 		 */
 		
-		
+		curState++;
 		
 	} // end state loop
 		
 		
-		
-		
+		outCDFG.setState(curState - 1);
+		return outCDFG;
 		
 		
 		
