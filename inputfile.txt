@@ -5,7 +5,7 @@
 3-min-2
 4-max-3
 5-min-3
-6-abs-1
+6-alu-1
 .rc
 alu=1
 mul=1
