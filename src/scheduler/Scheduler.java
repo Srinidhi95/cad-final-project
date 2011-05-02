@@ -58,6 +58,10 @@ public class Scheduler {
 
 		CDFG rcCDFG;
 		rcCDFG = asapCDFG.copy();
+		
+		// hack mobilities array for diagnostics
+		mobilities[0] = 1;
+		
 		performRC(rcCDFG, mobilities);
 		rcCDFG.printCDFG();
 
@@ -630,7 +634,7 @@ public class Scheduler {
 	
 		
 		int numNodes = inCDFG.getNumNodes();
-		int numStates = inCDFG.getNumStates();
+//		int numStates = inCDFG.getNumStates();
 		
 		// commit list
 		boolean [] commitList = new boolean[numNodes];
@@ -767,9 +771,8 @@ public class Scheduler {
 								System.out.println("node swapped out: " + aluList[y]);
 								System.out.println("commit before: " + commitList[aluList[y]]);
 								
-								aluList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[aluList[y]] = false; // remove old node from commit list
-								
+								aluList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								
 								
 								System.out.println("commit after1: " + commitList[aluList[y]]);
@@ -820,8 +823,8 @@ public class Scheduler {
 							{
 								// swap ID into mulList
 								
-								mulList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[mulList[y]] = false; // remove old node from commit list
+								mulList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
@@ -853,8 +856,8 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[minList[y]])
 							{
 								// swap ID into minList
-								minList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[minList[y]] = false; // remove old node from commit list
+								minList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
@@ -884,8 +887,8 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[maxList[y]])
 							{
 								// swap ID into maxList
-								maxList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[maxList[y]] = false; // remove old node from commit list
+								maxList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
@@ -894,9 +897,7 @@ public class Scheduler {
 					{
 						// max available - add this node to reservation list
 						maxList[maxList.length - numMAX] = outCDFG.nodes[cNode].getID();
-						
 						numMAX--;
-						
 						commitList[outCDFG.nodes[cNode].getID()] = true;
 						
 					}
@@ -915,8 +916,8 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[absList[y]])
 							{
 								// swap ID into absList
-								absList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[absList[y]] = false; // remove old node from commit list
+								absList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
