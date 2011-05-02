@@ -814,11 +814,15 @@ public class Scheduler {
 					if (numMUL == 0)
 					{
 						// all multipliers used -- check mobility
-						for (int y = 0; y < numMUL; y++)
+						for (int y = 0; y <= numMUL; y++)
 						{
 							if (mobilities[cNode] < mobilities[mulList[y]])
 							{
 								// swap ID into mulList
+								
+								mulList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
+								commitList[mulList[y]] = false; // remove old node from commit list
+								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
 					}
@@ -849,6 +853,9 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[minList[y]])
 							{
 								// swap ID into minList
+								minList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
+								commitList[minList[y]] = false; // remove old node from commit list
+								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
 					}
@@ -877,6 +884,9 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[maxList[y]])
 							{
 								// swap ID into maxList
+								maxList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
+								commitList[maxList[y]] = false; // remove old node from commit list
+								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
 					}
@@ -905,6 +915,9 @@ public class Scheduler {
 							if (mobilities[cNode] < mobilities[absList[y]])
 							{
 								// swap ID into absList
+								absList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
+								commitList[absList[y]] = false; // remove old node from commit list
+								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 							}
 						}
 					}
