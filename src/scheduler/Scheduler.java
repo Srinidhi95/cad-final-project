@@ -45,16 +45,19 @@ public class Scheduler {
 //		alapCDFG.printCDFG();
 		
 
-		// calculates mobilities
+		// calculates mobilities & alapStates (to be used to calculate urgency)
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
+		int [] alapStates = new int [newCDFG.getNumNodes()];
 		
 		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
 		{
 			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
+			alapStates[c] = alapCDFG.nodes[c].getState();
 //			System.out.println("Mobility of " + c + ": " + mobilities[c]);
 		}
 		
+	
 
 		CDFG rcCDFG;
 		rcCDFG = asapCDFG.copy();
@@ -62,7 +65,7 @@ public class Scheduler {
 		// hack mobilities array for diagnostics
 		mobilities[0] = 1;
 		
-		performRC(rcCDFG, mobilities);
+		performRC(rcCDFG, mobilities, alapStates);
 		rcCDFG.printCDFG();
 
 		
@@ -601,7 +604,7 @@ public class Scheduler {
 	
 	
 	
-	public static CDFG performRC(CDFG inCDFG, int [] mobilities)
+	public static CDFG performRC(CDFG inCDFG, int [] mobilities, int[] alapState)
 	{
 		// TODO: Implement URGENCY to break ties
 		
@@ -652,6 +655,8 @@ public class Scheduler {
 		boolean [] readyList = new boolean[numNodes]; // create the ready list
 		boolean dependency; 
 		
+		int [] urgency = new int [numNodes]; // urgency list
+		
 		// populate the ready list with nodes that do not depend on anything
 		
 		for (int x = 0; x < numNodes; x++)
@@ -691,13 +696,12 @@ public class Scheduler {
 		
 		// TODO: need to consider if number of states increases, perhaps use while loop
 		
-		int curState = 1;
-		
+		int curState = 1;	
 		int count = 0;
 		
-		while (count < numNodes)
+
+	while (count < numNodes)
 		
-//	for (curState = 1; curState <= numStates; curState++)
 	{
 		
 		// reset resources
@@ -707,9 +711,10 @@ public class Scheduler {
 		numMIN = inCDFG.getMIN();
 		numMAX = inCDFG.getMAX();
 		numABS = inCDFG.getABS();
+	
 		
-		System.out.println("---------------------");
-		System.out.println("Current State: " + curState);
+//		System.out.println("---------------------");
+//		System.out.println("Current State: " + curState);
 		
 		
 		// Add any ready nodes to the ready list
@@ -731,14 +736,22 @@ public class Scheduler {
 			}
 			
 			
-			System.out.println("Dependency = " + dependency);
+//			System.out.println("Dependency = " + dependency);
 			if (!dependency && !doneList[i])
 			{
 				// no dependencies found
 				readyList[i] = true; // add to the ready list
-				System.out.println("Added " + i + " to readylist");
+//				System.out.println("Added " + i + " to readylist");
 			}
 			
+		}
+		
+		
+		// calculate urgency
+		
+		for (int k = 0; k < numNodes; k++)
+		{
+			urgency[k] = alapState[k] - curState;
 		}
 		
 		
@@ -754,38 +767,36 @@ public class Scheduler {
 					// this node needs an ALU
 					if (numALU == 0)
 					{
-						System.out.println("No ALUs available");
+//						System.out.println("No ALUs available");
 						// all ALUs used -- check mobility
 						for (int y = 0; y <= numALU; y++)
 						{
 							
-							System.out.println("Comparing " + cNode + " and " + aluList[y]);
-							System.out.println("y=" + y);
+//							System.out.println("Comparing " + cNode + " and " + aluList[y]);
+//							System.out.println("y=" + y);
 							
-							if (mobilities[cNode] < mobilities[aluList[y]])
+							if ((mobilities[cNode] < mobilities[aluList[y]]) || (urgency[cNode] < urgency[aluList[y]]))
 							{
-								System.out.println("This has higher priority - SWAP");
+//								System.out.println("This has higher priority - SWAP");
 								// mobility of this node is less so it gets priority
 								// swap its ID into the aluList and remove other node from commit lists
 								
-								System.out.println("node swapped out: " + aluList[y]);
-								System.out.println("commit before: " + commitList[aluList[y]]);
+//								System.out.println("node swapped out: " + aluList[y]);
+//								System.out.println("commit before: " + commitList[aluList[y]]);
 								
 								commitList[aluList[y]] = false; // remove old node from commit list
 								aluList[y] = outCDFG.nodes[cNode].getID(); // swap ID into reservation list
 								
 								
-								System.out.println("commit after1: " + commitList[aluList[y]]);
+//								System.out.println("commit after1: " + commitList[aluList[y]]);
 								
-								// TODO: Problem is that cNode.getID is = to aluList[y]
-							
-								System.out.println("node swapped in: " + outCDFG.nodes[cNode].getID());
-								System.out.println("alulist[y] = " + aluList[y]);
+//								System.out.println("node swapped in: " + outCDFG.nodes[cNode].getID());
+//								System.out.println("alulist[y] = " + aluList[y]);
 					
 								
 								commitList[outCDFG.nodes[cNode].getID()] = true; // add new node to commit list
 								
-								System.out.println("commit after: " + commitList[aluList[y]]);
+//								System.out.println("commit after: " + commitList[aluList[y]]);
 								
 							}
 						}
@@ -795,12 +806,12 @@ public class Scheduler {
 					{
 						// alu available - add this node to reservation list and to commit lists
 						
-						System.out.println("numALU = " + numALU);
-						System.out.println("alulistlength = " + aluList.length);
+//						System.out.println("numALU = " + numALU);
+//						System.out.println("alulistlength = " + aluList.length);
 						
 						aluList[aluList.length - numALU] = outCDFG.nodes[cNode].getID(); // add to reservation list
 						
-						System.out.println("Added " + outCDFG.nodes[cNode].getID() + " to alu list at " + (aluList.length - numALU));
+//						System.out.println("Added " + outCDFG.nodes[cNode].getID() + " to alu list at " + (aluList.length - numALU));
 						
 						numALU--; // reduce number of available ALUs
 						
@@ -819,7 +830,7 @@ public class Scheduler {
 						// all multipliers used -- check mobility
 						for (int y = 0; y <= numMUL; y++)
 						{
-							if (mobilities[cNode] < mobilities[mulList[y]])
+							if (mobilities[cNode] < mobilities[mulList[y]] || (urgency[cNode] < urgency[mulList[y]]))
 							{
 								// swap ID into mulList
 								
@@ -853,7 +864,7 @@ public class Scheduler {
 						// all mins used used -- check mobility
 						for (int y = 0; y < numMIN; y++)
 						{
-							if (mobilities[cNode] < mobilities[minList[y]])
+							if (mobilities[cNode] < mobilities[minList[y]] || (urgency[cNode] < urgency[minList[y]]))
 							{
 								// swap ID into minList
 								commitList[minList[y]] = false; // remove old node from commit list
@@ -884,7 +895,7 @@ public class Scheduler {
 						// all max used -- check mobility
 						for (int y = 0; y < numMAX; y++)
 						{
-							if (mobilities[cNode] < mobilities[maxList[y]])
+							if (mobilities[cNode] < mobilities[maxList[y]] || (urgency[cNode] < urgency[maxList[y]]))
 							{
 								// swap ID into maxList
 								commitList[maxList[y]] = false; // remove old node from commit list
@@ -913,7 +924,7 @@ public class Scheduler {
 						// all abs used -- check mobility
 						for (int y = 0; y < numABS; y++)
 						{
-							if (mobilities[cNode] < mobilities[absList[y]])
+							if (mobilities[cNode] < mobilities[absList[y]] || (urgency[cNode] < urgency[absList[y]]))
 							{
 								// swap ID into absList
 								commitList[absList[y]] = false; // remove old node from commit list
@@ -945,19 +956,18 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-	//	System.out.println("Available ALUs = " + numALU);
 		
-		for (int a = 0; a < numNodes; a++)
-		{
-			System.out.println("Ready(before)  " + a + " : " + readyList[a]);
-			
-		}
-		
-		for (int b = 0; b < numNodes; b++)
-		{
-			System.out.println("Commit(before) " + b + ": " + commitList[b]);
-		}
-		
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//			System.out.println("Ready(before)  " + a + " : " + readyList[a]);
+//			
+//		}
+//		
+//		for (int b = 0; b < numNodes; b++)
+//		{
+//			System.out.println("Commit(before) " + b + ": " + commitList[b]);
+//		}
+//		
 		/*
 		 * End Diagnostics
 		 */
@@ -989,24 +999,24 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-		System.out.println("Available ALUs = " + numALU);
-		
-		for (int a = 0; a < numNodes; a++)
-		{
-			System.out.println("Ready(after)  " + a + " : " + readyList[a]);
-			
-		}
-		
-		for (int b = 0; b < numNodes; b++)
-		{
-			System.out.println("Commit(after) " + b + ": " + commitList[b]);
-		}
-		
-		for (int c = 0; c < numNodes; c++)
-		{
-			System.out.println("Done " + c + ": " + doneList[c]);
-			
-		}
+//		System.out.println("Available ALUs = " + numALU);
+//		
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//			System.out.println("Ready(after)  " + a + " : " + readyList[a]);
+//			
+//		}
+//		
+//		for (int b = 0; b < numNodes; b++)
+//		{
+//			System.out.println("Commit(after) " + b + ": " + commitList[b]);
+//		}
+//		
+//		for (int c = 0; c < numNodes; c++)
+//		{
+//			System.out.println("Done " + c + ": " + doneList[c]);
+//			
+//		}
 		
 		/*
 		 * End Diagnostics
