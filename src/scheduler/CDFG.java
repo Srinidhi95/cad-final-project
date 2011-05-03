@@ -1,5 +1,8 @@
 package scheduler;
 
+import java.io.IOException;
+import java.io.*;
+
 public class CDFG {
 
 	
@@ -210,6 +213,52 @@ public class CDFG {
 			
 		this.printResources();
 
+		
+	}
+	
+	public void printCDFG(String filename)
+	{
+		
+		try
+		{
+			FileWriter fstream = new FileWriter(filename);
+			BufferedWriter output = new BufferedWriter(fstream);
+			
+			output.write(this.getTitle());
+			output.write('\n');
+			output.write("# of States: " + this.getNumStates());
+			output.write('\n');
+			output.write("=====================\n");
+			
+			
+			if (nodes[0] != null)
+			{
+				for (int i = 0; i < numNodes; i++)
+				{
+					output.write("ID \t\t= \t" + nodes[i].getID());
+					output.write('\n');
+					output.write("State \t= \t" + nodes[i].getState());
+					output.write('\n');
+					output.write("Op \t\t= \t" + nodes[i].getOp());
+					output.write('\n');
+					output.write(nodes[i].printConnToFile());
+					output.write('\n');
+					output.write("----------------------------\n");
+				}
+			}
+			
+			output.close();
+			// TODO: Add Resources Printout
+			
+			
+			
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		
+		
 		
 	}
 	

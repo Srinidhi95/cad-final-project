@@ -38,7 +38,8 @@ public class Scheduler {
 		alapCDFG = asapCDFG.copy();
 		alapCDFG = performALAP(alapCDFG);
 		
-
+		newCDFG.printCDFG("newCDFG.txt");
+		asapCDFG.printCDFG("asapCDFG.txt");
 		
 //		newCDFG.printCDFG();
 //		asapCDFG.printCDFG();
@@ -601,7 +602,9 @@ public class Scheduler {
 	
 
 	
-	
+	/*
+	 * Function to perform RC scheduling given a list of mobilities and ALAP states for each node
+	 */
 	
 	
 	public static CDFG performRC(CDFG inCDFG, int [] mobilities, int[] alapState)
@@ -1034,14 +1037,32 @@ public class Scheduler {
 		
 	} // end method
 	
-	public void performTC1()
+	
+	
+	/*
+	 * Function to perform TC scheduling given a clock restraint
+	 */
+	
+	public static CDFG performTC1(CDFG inCDFG, int maxCLK)
 	{
+		CDFG outCDFG = inCDFG;
+	
+		// TODO: Need to input ALAP states list to generate urgency
 		
+		
+		
+		
+		
+		return outCDFG;
 	}
 	
 	public void performTC2()
 	{
 		
 	}
+	
+	
+	
+	
 
 }
