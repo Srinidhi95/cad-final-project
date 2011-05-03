@@ -144,4 +144,35 @@ public class Node {
 	}
 
 	
+	
+	public String printConnToFile() // for diagnostic purposes
+	{
+		String list = "";
+		
+		if (conn[0] == -1)
+		{
+			list = "No Dependencies.";
+			return list;
+		}
+		else
+		{
+			list = "Dep.\t=\t(";
+			for (int i = 0; i < conn.length; i++)
+			{
+				if (i == (conn.length - 1))
+				{
+					list += conn[i] + ")";
+				}
+				else{
+					list += conn[i] + ",";	
+				}
+	
+			}
+			list += "\n# of Dependencies = " + conn.length;
+			return list;
+			
+		}
+		
+	}
+	
 }
