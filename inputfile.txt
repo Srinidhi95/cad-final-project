@@ -1,10 +1,10 @@
 .7
 0-alu-x
 1-alu-x
-2-mul-0,1
+2-alu-0,1
 3-min-2
 4-max-3
-5-min-3
+5-max-3
 6-alu-1
 .rc
 alu=1
