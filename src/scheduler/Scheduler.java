@@ -38,15 +38,21 @@ public class Scheduler {
 		alapCDFG = asapCDFG.copy();
 		alapCDFG = performALAP(alapCDFG);
 		
-		newCDFG.printCDFG("newCDFG.txt");
-		asapCDFG.printCDFG("asapCDFG.txt");
+		CDFG alap2CDFG;
+		alap2CDFG = asapCDFG.copy();
+		alap2CDFG = performALAP2(alap2CDFG, (asapCDFG.getNumStates() + 1));
+		
+		alapCDFG.printCDFG();
+		alap2CDFG.printCDFG();
+		
+//		newCDFG.printCDFG("newCDFG.txt");
+//		asapCDFG.printCDFG("asapCDFG.txt");
 		
 //		newCDFG.printCDFG();
 //		asapCDFG.printCDFG();
 //		alapCDFG.printCDFG();
 		
 
-		// calculates mobilities & alapStates (to be used to calculate urgency)
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
 		int [] alapStates = new int [newCDFG.getNumNodes()];
@@ -67,7 +73,7 @@ public class Scheduler {
 		mobilities[0] = 1;
 		
 		performRC(rcCDFG, mobilities, alapStates);
-		rcCDFG.printCDFG();
+//		rcCDFG.printCDFG();
 
 		
 
@@ -600,6 +606,104 @@ public class Scheduler {
 	}
 	
 	
+	
+	public static CDFG performALAP2(CDFG inCDFG, int numStates)
+	{
+	
+		
+		//int numStates = inCDFG.getNumStates(); // same number of states as ASAP
+		int numNodes = inCDFG.getNumNodes();
+		
+		CDFG outCDFG = inCDFG;
+		outCDFG.setTitle("ALAP2 CDFG");
+		outCDFG.setState(numStates);
+		
+		// commit and done lists
+		boolean [] commitList = new boolean[numNodes];
+		boolean [] doneList = new boolean[numNodes];
+		
+		boolean C_FLAG = true; // commit if this flag is true
+		
+		
+		for (int curState = numStates; curState > 0; curState--)
+		{
+			/*
+			 * For every state starting with the last, go through every node
+			 * and only commit those that do not have anything depending on them that
+			 * hasn't already been committed
+			 */
+			
+//			System.out.println("===================");
+			
+//			System.out.println("Current State: " + curState);
+			
+			
+			// reset the flag
+			C_FLAG = true;
+			
+			for (int cNode = 0; cNode < numNodes; cNode++)
+			{
+				/*
+				 * For this node, loop through nodes and check if they depend on me
+				 * If none do (or if they do and have been committed) then commit this node 
+				 */
+				
+				// reset the flag
+				C_FLAG = true;
+				
+				if (!doneList[cNode])
+				{
+				
+				for (int i = 0; i < numNodes; i++)
+				{
+					// call dependsOn(i) and check to see if it's true
+					if (outCDFG.dependency(cNode, i))
+					{
+						if (doneList[i] == false)
+						{
+							// this node is not complete
+							C_FLAG = false; // cannot commit this node
+						}
+					}
+					
+					
+				}
+				
+				// if C_FLAG is still true, then commit this node
+				
+				if (C_FLAG)
+				{
+					// commit the node
+					
+//					System.out.println("Committing: " + cNode + " to state " + curState);
+//					
+//					for (int x = 0; x < numNodes; x++)
+//					{
+//						System.out.println("Done " + x + ": " + doneList[x]);
+//					}
+					
+					
+					commitList[cNode] = true;
+					outCDFG.nodes[cNode].setState(curState); // change state number to current state
+					
+					
+				}
+				
+				
+				
+			} // end node loop
+			
+			// finalize commits
+			
+			System.arraycopy(commitList, 0, doneList, 0, numNodes); 
+			
+			}
+			
+		} // end state loop
+		
+		return outCDFG;
+		
+	}
 
 	
 	/*
@@ -609,7 +713,6 @@ public class Scheduler {
 	
 	public static CDFG performRC(CDFG inCDFG, int [] mobilities, int[] alapState)
 	{
-		// TODO: Implement URGENCY to break ties
 		
 		System.out.println("Starting RC...");
 		
@@ -696,8 +799,6 @@ public class Scheduler {
 		
 		
 		// repeat for each state
-		
-		// TODO: need to consider if number of states increases, perhaps use while loop
 		
 		int curState = 1;	
 		int count = 0;
@@ -1056,10 +1157,44 @@ public class Scheduler {
 		return outCDFG;
 	}
 	
-	public void performTC2()
+	public static CDFG performTC2(CDFG inCDFG)
 	{
+		CDFG outCDFG = inCDFG;
+		int numNodes = inCDFG.getNumNodes();
 		
+		int nodesDone = 0;
+		
+		boolean [] doneList = new boolean[numNodes];
+		
+		while (nodesDone < numNodes)
+		{
+			
+			// TODO: Compute timeframes
+			
+			// TODO: Compute operatation & type probabilities
+			
+			// TODO: Compute self-forces & ps-forces & total forces
+			
+			// TODO: Schedule operation with least force and update timeframe
+			
+		
+			
+			
+			
+//		nodesDone++;	
+			
+		}
+		
+		
+		
+		
+		
+		
+		return outCDFG;
 	}
+	
+	
+	
 	
 	
 	
