@@ -1770,7 +1770,7 @@ public class Scheduler {
 		int [] tf_end = alap2States;
 		
 		double[][] nodeProb = new double[clk+1][numNodes];	//ignore position 0 for states
-		double[][] nodeForce = new double[clk+1][numNodes];	//ignore position 0 for states
+		double[][] nodeselfForce = new double[clk+1][numNodes];	//ignore position 0 for states
 		
 		// *******MUST USE CLK+1 FOR STATES BECAUSE STATES RUN 1-TOTAL INSTEAD OF 0-(TOTAL-1)
 		
@@ -1778,7 +1778,7 @@ public class Scheduler {
 			for (int j = 0; j<numNodes; j++)
 			{
 				nodeProb[i][j] = 0;
-				nodeForce[i][j] = -99;
+				nodeselfForce[i][j] = -99;
 			}
 		
 		/*
@@ -1809,9 +1809,6 @@ public class Scheduler {
 		}
 		
 		//double [] tf_prob = new double[numNodes];
-		
-		
-		
 		//while (nodesDone < numNodes)	////?????
 		//{
 			for (int cNode = 0; cNode < numNodes; cNode++)
@@ -1856,29 +1853,53 @@ public class Scheduler {
 					}		
 			}
 			
+			int qUsed = 0;
 			
-		/*	for (int cNode = 0; cNode < numNodes; cNode++)
+			for (int cNode = 0; cNode < numNodes; cNode++)
 			{
-				for(int state = 1; state<clk+1; state++)
+				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
 				{
-					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu")){
-						distALU[state] = distALU[state] + nodeProb[state][cNode];
-						//q[]
-					}
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu"))
+						qUsed = 0;
+					
 					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("mul"))
-						distMUL[state] = distMUL[state] + nodeProb[state][cNode];
+						qUsed = 1;
 					
 					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("min"))
-						distMIN[state] = distMIN[state] + nodeProb[state][cNode];
+						qUsed = 2;
 					
 					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("max"))
-						distMAX[state] = distMAX[state] + nodeProb[state][cNode];
+						qUsed = 3;
 					
 					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("abs"))
-						distABS[state] = distABS[state] + nodeProb[state][cNode];
+						qUsed = 4;
+					
+					if(nodeProb[state][cNode]!=0)
+					{
+						if(nodeProb[state][cNode]==1)
+							nodeselfForce[state][cNode] = 99;	//sets nodeForce to 99 for nodes with prob 1 to ensure scheduling
+						else
+							nodeselfForce[state][cNode] = 0;	//reset nodeselfForce to 0 from -99 for existing node probabilities
+					}
+							
+					
+					for(int fstate = tf_start[cNode]; fstate <= tf_end[cNode]; fstate++)
+					{
+						if(fstate==state)
+							nodeselfForce[state][cNode] = nodeselfForce[state][cNode] + q[qUsed][fstate]*(1-nodeProb[state][cNode]);
+						else
+							nodeselfForce[state][cNode] = nodeselfForce[state][cNode] + q[qUsed][fstate]*(0-nodeProb[state][cNode]);
+					}
+					//Diagnostics
+					/*
+					System.out.println("*********************************************************************");
+					System.out.println("Node: " + cNode);
+					System.out.println("Used state: " + state + " Self force: " + nodeselfForce[state][cNode]);
+					System.out.println("*********************************************************************");
+					*/
 				}
 			}
-		*/	
+			
 			
 			
 			// TODO: Compute self-forces & ps-forces & total forces
