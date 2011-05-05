@@ -37,19 +37,15 @@ public class Scheduler {
 		CDFG alapCDFG;
 		alapCDFG = asapCDFG.copy();
 		alapCDFG = performALAP(alapCDFG);
-		
-		CDFG alap2CDFG;
-		alap2CDFG = asapCDFG.copy();
-		alap2CDFG = performALAP2(alap2CDFG, (asapCDFG.getNumStates() + 1));
+
 		
 		alapCDFG.printCDFG();
-		alap2CDFG.printCDFG();
-		
+
 //		newCDFG.printCDFG("newCDFG.txt");
 //		asapCDFG.printCDFG("asapCDFG.txt");
 		
 //		newCDFG.printCDFG();
-//		asapCDFG.printCDFG();
+		asapCDFG.printCDFG();
 //		alapCDFG.printCDFG();
 		
 
@@ -68,6 +64,15 @@ public class Scheduler {
 
 		CDFG rcCDFG;
 		rcCDFG = asapCDFG.copy();
+		
+		CDFG tcCDFG;
+		tcCDFG = newCDFG.copy();
+		
+		//public static CDFG performTC(CDFG inCDFG, int numasapstates, int [] mobilities, int[] alapState, int maxCLK)
+		
+		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 6 );
+		
+		tcCDFG.printCDFG();
 		
 		// hack mobilities array for diagnostics
 		mobilities[0] = 1;
@@ -713,7 +718,6 @@ public class Scheduler {
 	
 	public static CDFG performRC(CDFG inCDFG, int [] mobilities, int[] alapState)
 	{
-		
 		System.out.println("Starting RC...");
 		
 		for (int b = 0; b < mobilities.length; b++)
@@ -799,7 +803,7 @@ public class Scheduler {
 		
 		
 		// repeat for each state
-		
+
 		int curState = 1;	
 		int count = 0;
 		
@@ -1139,10 +1143,548 @@ public class Scheduler {
 	} // end method
 	
 	
-	
+	// TODO: TC
 	/*
 	 * Function to perform TC scheduling given a clock restraint
 	 */
+	//must use ASAPcdfg.getNumNodes as input
+	public static CDFG performTC(CDFG inCDFG, int numasapstates, int [] mobilities, int[] alapState, int maxCLK)
+	{
+		if(maxCLK < numasapstates)	//exit if number of wanted states exceed asap - impossible scenario
+		{
+			System.out.println("Impossible time constraint - please increase number of required states");
+			System.exit(1);
+		}
+		
+		System.out.println("Starting TC...");
+		
+		for (int b = 0; b < mobilities.length; b++)
+		{
+			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
+		}
+
+		CDFG outCDFG = inCDFG;
+		outCDFG.setTitle("TC CDFG");
+		
+		int numNodes = inCDFG.getNumNodes();
+		
+		int numALU = 0;
+		int numMUL = 0;
+		int numMIN = 0;
+		int numMAX = 0;
+		int numABS = 0;
+			
+		// assume resource list from nodes - iterate and set each type that exists to 1
+		for(int b = 0; b < numNodes; b++)
+		{
+			if(inCDFG.nodes[b].getOp().equalsIgnoreCase("alu")){
+				numALU = 1;
+			}
+			if(inCDFG.nodes[b].getOp().equalsIgnoreCase("mul")){
+				numMUL = 1;
+			}
+			if(inCDFG.nodes[b].getOp().equalsIgnoreCase("min")){
+				numMIN = 1;
+			}
+			if(inCDFG.nodes[b].getOp().equalsIgnoreCase("max")){
+				numMAX = 1;
+			}
+			if(inCDFG.nodes[b].getOp().equalsIgnoreCase("abs")){
+				numABS = 1;
+			}
+		}
+		
+		outCDFG.setResources(numALU, numMUL, numMIN, numMAX, numABS);
+		
+		//
+		// reservation lists for each resource
+		// 
+		
+	/*	int [] aluList = new int[outCDFG.getALU()];
+		int [] mulList = new int[outCDFG.getMUL()];
+		int [] minList = new int[outCDFG.getMIN()];
+		int [] maxList = new int[outCDFG.getMAX()];	
+		int [] absList = new int[outCDFG.getABS()];
+	*/	
+		
+		
+//		int numStates = inCDFG.getNumStates();
+		
+		// commit list
+		boolean [] commitList = new boolean[numNodes];
+		boolean [] doneList = new boolean[numNodes]; 
+		
+		
+		// Check mobilities array
+		
+		if (mobilities.length != numNodes)
+		{
+			System.out.println("Mobilities Array should contain " + numNodes + " elements.");
+			System.exit(1);
+		}
+		
+		boolean [] readyList = new boolean[numNodes]; // create the ready list
+		boolean dependency; 
+		
+		int [] urgency = new int [numNodes]; // urgency list
+		
+		// populate the ready list with nodes that do not depend on anything
+		
+		for (int x = 0; x < numNodes; x++)
+		{
+			if (outCDFG.nodes[x].dependsOn(-1))
+			{
+				// add this node to the ready list
+				readyList[x] = true;
+				System.out.println("Added Node: " + x);		
+			}		
+		}
+		
+		/*
+		 * Diagnostics: Print ready & commit lists
+		 */
+		
+		for (int a = 0; a < numNodes; a++)
+		{
+			System.out.println("Ready  " + a + " : " + readyList[a]);
+		}
+		
+		for (int b = 0; b < numNodes; b++)
+		{
+			System.out.println("Commit " + b + ": " + commitList[b]);
+		}
+		
+		/*
+		 * End Diagnostics
+		 */
+		
+		
+		// repeat for each state
+		
+		int curState = 1;	
+		
+
+	for(curState = 1; curState <= maxCLK; curState++)		
+	{
+		// reset resources
+		
+		numALU = outCDFG.getALU();
+		numMUL = outCDFG.getMUL();
+		numMIN = outCDFG.getMIN();
+		numMAX = outCDFG.getMAX();
+		numABS = outCDFG.getABS();
+		
+		int [] aluList = new int[outCDFG.getALU()];
+		int [] mulList = new int[outCDFG.getMUL()];
+		int [] minList = new int[outCDFG.getMIN()];
+		int [] maxList = new int[outCDFG.getMAX()];	
+		int [] absList = new int[outCDFG.getABS()];
+		
+//		System.out.println("---------------------");
+//		System.out.println("Current State: " + curState);
+		
+		
+		// Add any ready nodes to the ready list
+		
+		for (int i = 0; i < numNodes; i++)
+		{
+			// Go through each node and add it to the ready list if all its dependencies have been committed
+			dependency = false;
+			
+			if ((outCDFG.nodes[i].conn[0] != -1) && !doneList[i])
+			{
+				for (int j = 0; j < outCDFG.nodes[i].conn.length; j++)
+				{
+					if (!doneList[outCDFG.nodes[i].conn[j]])
+					{
+						dependency = true;
+					}
+				}
+			}
+			
+			
+//			System.out.println("Dependency = " + dependency);
+			if (!dependency && !doneList[i])
+			{
+				// no dependencies found
+				readyList[i] = true; // add to the ready list
+//				System.out.println("Added " + i + " to readylist");
+			}
+			
+		}
+		
+		
+		// calculate urgency
+		
+		for (int k = 0; k < numNodes; k++)
+		{
+			urgency[k] = alapState[k] - curState;
+		}
+		
+/*		int maxUrgency = 0;
+		
+		for(int thisnode = 0; thisnode <=numNodes; thisnode++)
+		{
+			if(readyList[thisnode]==true&&urgency[thisnode]>maxUrgency)
+				maxUrgency = urgency[thisnode];
+		}
+	*/	
+		//Resource stuff starts here
+		if(outCDFG.getALU()!=0)	//We have ALUs to allocate in general
+		{	
+						int aluindex = 0;
+					
+						for(int curnode = 0; curnode < numNodes; curnode++)	//iterate through nodes
+						{
+							
+							////// ***************ALU!!!!**********************************////////////////////////
+							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("alu"))	//this node needs this resource, or move on
+							{
+								
+								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
+									if(numALU==0) //extra resources are needed
+									{
+										outCDFG.setALU(outCDFG.getALU()+1);	//create extra resource
+										numALU++;	//update numALU
+										int[] temp = new int[aluList.length+1];
+										for(int i = 0; i<aluList.length; i++){
+											temp[i] = aluList[i]; 
+										}
+										aluList = new int[temp.length];
+										
+										for(int i = 0; i<temp.length; i++){
+											aluList[i] = temp[i]; 
+										}
+									}
+									//use alu spot for this node - change node to the state number and commit it
+									outCDFG.nodes[curnode].setState(curState);
+									numALU--;
+									readyList[curnode]=false;
+									commitList[curnode]=true;
+									aluList[aluindex] = curnode;
+									aluindex++;
+								}
+								
+								else //urgency not 0
+								{
+									if(numALU!=0) //we have extra resources to allocate
+									{
+										outCDFG.nodes[curnode].setState(curState);
+										numALU--;
+										readyList[curnode]=false;
+										commitList[curnode]=true;
+										aluList[aluindex] = curnode;
+										aluindex++;
+									}
+									else
+									{
+										for(int y = 0; y < aluList.length; y++)	//try to swap with a less urgent node
+										{
+											if(urgency[curnode]<urgency[aluList[y]])
+											{
+												int replacednode = aluList[y];
+												readyList[replacednode] = true;
+												commitList[replacednode] = false;
+												
+												outCDFG.nodes[curnode].setState(curState);
+												readyList[curnode]=false;
+												commitList[curnode]=true;
+												aluList[aluindex] = curnode;
+											}
+										}
+									}
+								}
+							}
+						}	
+			}
+		
+		if(outCDFG.getMUL()!=0)	//We have muls to allocate in general
+		{	
+						int mulindex = 0;
+					
+						for(int curnode = 0; curnode < numNodes; curnode++)	//iterate through nodes
+						{
+							
+							////// ***************mul!!!!**********************************////////////////////////
+							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("mul"))	//this node needs this resource, or move on
+							{
+								
+								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
+									if(numMUL==0) //extra resources are needed
+									{
+										outCDFG.setMUL(outCDFG.getMUL()+1);	//create extra resource
+										numMUL++;	//update nummul
+										int[] temp = new int[mulList.length+1];
+										for(int i = 0; i<mulList.length; i++){
+											temp[i] = mulList[i]; 
+										}
+										mulList = new int[temp.length];
+										
+										for(int i = 0; i<temp.length; i++){
+											mulList[i] = temp[i]; 
+										}
+									}
+									//use mul spot for this node - change node to the state number and commit it
+									outCDFG.nodes[curnode].setState(curState);
+									numMUL--;
+									readyList[curnode]=false;
+									commitList[curnode]=true;
+									mulList[mulindex] = curnode;
+									mulindex++;
+								}
+								
+								else //urgency not 0
+								{
+									if(numMUL!=0) //we have extra resources to allocate
+									{
+										outCDFG.nodes[curnode].setState(curState);
+										numMUL--;
+										readyList[curnode]=false;
+										commitList[curnode]=true;
+										mulList[mulindex] = curnode;
+										mulindex++;
+									}
+									else
+									{
+										for(int y = 0; y < mulList.length; y++)	//try to swap with a less urgent node
+										{
+											if(urgency[curnode]<urgency[mulList[y]])
+											{
+												int replacednode = mulList[y];
+												readyList[replacednode] = true;
+												commitList[replacednode] = false;
+												
+												outCDFG.nodes[curnode].setState(curState);
+												readyList[curnode]=false;
+												commitList[curnode]=true;
+												mulList[mulindex] = curnode;
+											}
+										}
+									}
+								}
+							}
+						}	
+			}
+		
+		if(outCDFG.getMIN()!=0)	//We have mins to allocate in general
+		{	
+						int minindex = 0;
+					
+						for(int curnode = 0; curnode < numNodes; curnode++)	//iterate through nodes
+						{
+							
+							////// ***************min!!!!**********************************////////////////////////
+							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("min"))	//this node needs this resource, or move on
+							{
+								
+								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
+									if(numMIN==0) //extra resources are needed
+									{
+										outCDFG.setMIN(outCDFG.getMIN()+1);	//create extra resource
+										numMIN++;	//update nummin
+										int[] temp = new int[minList.length+1];
+										for(int i = 0; i<minList.length; i++){
+											temp[i] = minList[i]; 
+										}
+										minList = new int[temp.length];
+										
+										for(int i = 0; i<temp.length; i++){
+											minList[i] = temp[i]; 
+										}
+									}
+									//use min spot for this node - change node to the state number and commit it
+									outCDFG.nodes[curnode].setState(curState);
+									numMIN--;
+									readyList[curnode]=false;
+									commitList[curnode]=true;
+									minList[minindex] = curnode;
+									minindex++;
+								}
+								
+								else //urgency not 0
+								{
+									if(numMIN!=0) //we have extra resources to allocate
+									{
+										outCDFG.nodes[curnode].setState(curState);
+										numMIN--;
+										readyList[curnode]=false;
+										commitList[curnode]=true;
+										minList[minindex] = curnode;
+										minindex++;
+									}
+									else
+									{
+										for(int y = 0; y < minList.length; y++)	//try to swap with a less urgent node
+										{
+											if(urgency[curnode]<urgency[minList[y]])
+											{
+												int replacednode = minList[y];
+												readyList[replacednode] = true;
+												commitList[replacednode] = false;
+												
+												outCDFG.nodes[curnode].setState(curState);
+												readyList[curnode]=false;
+												commitList[curnode]=true;
+												minList[minindex] = curnode;
+											}
+										}
+									}
+								}
+							}
+						}	
+			}
+		
+		if(outCDFG.getMAX()!=0)	//We have maxs to allocate in general
+		{	
+						int maxindex = 0;
+					
+						for(int curnode = 0; curnode < numNodes; curnode++)	//iterate through nodes
+						{
+							
+							////// ***************max!!!!**********************************////////////////////////
+							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("max"))	//this node needs this resource, or move on
+							{
+								
+								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
+									if(numMAX==0) //extra resources are needed
+									{
+										outCDFG.setMAX(outCDFG.getMAX()+1);	//create extra resource
+										numMAX++;	//update nummax
+										int[] temp = new int[maxList.length+1];
+										for(int i = 0; i<maxList.length; i++){
+											temp[i] = maxList[i]; 
+										}
+										maxList = new int[temp.length];
+										
+										for(int i = 0; i<temp.length; i++){
+											maxList[i] = temp[i]; 
+										}
+									}
+									//use max spot for this node - change node to the state number and commit it
+									outCDFG.nodes[curnode].setState(curState);
+									numMAX--;
+									readyList[curnode]=false;
+									commitList[curnode]=true;
+									maxList[maxindex] = curnode;
+									maxindex++;
+								}
+								
+								else //urgency not 0
+								{
+									if(numMAX!=0) //we have extra resources to allocate
+									{
+										outCDFG.nodes[curnode].setState(curState);
+										numMAX--;
+										readyList[curnode]=false;
+										commitList[curnode]=true;
+										maxList[maxindex] = curnode;
+										maxindex++;
+									}
+									else
+									{
+										for(int y = 0; y < maxList.length; y++)	//try to swap with a less urgent node
+										{
+											if(urgency[curnode]<urgency[maxList[y]])
+											{
+												int replacednode = maxList[y];
+												readyList[replacednode] = true;
+												commitList[replacednode] = false;
+												
+												outCDFG.nodes[curnode].setState(curState);
+												readyList[curnode]=false;
+												commitList[curnode]=true;
+												maxList[maxindex] = curnode;
+											}
+										}
+									}
+								}
+							}
+						}	
+			}
+		
+		if(outCDFG.getABS()!=0)	//We have abs to allocate in general
+		{	
+						int absindex = 0;
+					
+						for(int curnode = 0; curnode < numNodes; curnode++)	//iterate through nodes
+						{
+							
+							////// ***************abs!!!!**********************************////////////////////////
+							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("abs"))	//this node needs this resource, or move on
+							{
+								
+								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
+									if(numABS==0) //extra resources are needed
+									{
+										outCDFG.setABS(outCDFG.getABS()+1);	//create extra resource
+										numABS++;	//update numabs
+										int[] temp = new int[absList.length+1];
+										for(int i = 0; i<absList.length; i++){
+											temp[i] = absList[i]; 
+										}
+										absList = new int[temp.length];
+										
+										for(int i = 0; i<temp.length; i++){
+											absList[i] = temp[i]; 
+										}
+									}
+									//use abs spot for this node - change node to the state number and commit it
+									outCDFG.nodes[curnode].setState(curState);
+									numABS--;
+									readyList[curnode]=false;
+									commitList[curnode]=true;
+									absList[absindex] = curnode;
+									absindex++;
+								}
+								
+								else //urgency not 0
+								{
+									if(numABS!=0) //we have extra resources to allocate
+									{
+										outCDFG.nodes[curnode].setState(curState);
+										numABS--;
+										readyList[curnode]=false;
+										commitList[curnode]=true;
+										absList[absindex] = curnode;
+										absindex++;
+									}
+									else
+									{
+										for(int y = 0; y < absList.length; y++)	//try to swap with a less urgent node
+										{
+											if(urgency[curnode]<urgency[absList[y]])
+											{
+												int replacednode = absList[y];
+												readyList[replacednode] = true;
+												commitList[replacednode] = false;
+												
+												outCDFG.nodes[curnode].setState(curState);
+												readyList[curnode]=false;
+												commitList[curnode]=true;
+												absList[absindex] = curnode;
+											}
+										}
+									}
+								}
+							}
+						}	
+			}
+		
+		for (int x = 0; x < numNodes; x++)
+		{
+			if (commitList[x] == true)
+			{
+				// commit this node
+				outCDFG.nodes[x].setState(curState);
+				commitList[x] = false;
+				readyList[x] = false;
+				doneList[x]	 = true;
+			}
+		}
+		
+		}
+	return outCDFG;	
+} // end TC method
 	
 	public static CDFG performTC1(CDFG inCDFG, int maxCLK)
 	{
