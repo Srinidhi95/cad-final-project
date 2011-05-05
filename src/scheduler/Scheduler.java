@@ -3,6 +3,7 @@ package scheduler;
 import java.io.*;
 
 
+
 public class Scheduler {
 	
 	public static int operation = 0; // 1 = ASAP, 2 = ALAP, 3 = RC, 4 = TC1, 5 = TC2
@@ -26,10 +27,18 @@ public class Scheduler {
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Original CDFG");
 		
+//		int [] dependList = newCDFG.dependOn(6);
+//		
+//		for (int j = 0; j < dependList.length; j++)
+//		{
+//			System.out.println("dependtest: " + dependList[j]);
+//		}
+//		
+		
 		
 		System.out.println("Number of states = " + newCDFG.getState()); // Should be 1 before ASAP/ALAP
 		
-		newCDFG.printCDFG();
+//		newCDFG.printCDFG();
 		
 		CDFG asapCDFG;
 		asapCDFG = newCDFG.copy();
@@ -39,6 +48,11 @@ public class Scheduler {
 		CDFG alapCDFG;
 		alapCDFG = asapCDFG.copy();
 		alapCDFG = performALAP(alapCDFG);
+		
+		CDFG alap2CDFG;
+		alap2CDFG = asapCDFG.copy();
+		alap2CDFG = performALAP2(alap2CDFG, (alapCDFG.getNumStates() + 1));
+		
 
 		
 		
@@ -47,20 +61,27 @@ public class Scheduler {
 //		asapCDFG.printCDFG("asapCDFG.txt");
 		
 //		newCDFG.printCDFG();
-		System.out.println();
-		asapCDFG.printCDFG();
-		System.out.println();
-		alapCDFG.printCDFG();
+//		System.out.println();
+//		asapCDFG.printCDFG();
+//		System.out.println();
+//		alapCDFG.printCDFG();
 
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
 		int [] alapStates = new int [newCDFG.getNumNodes()];
+		int [] asapStates = new int [newCDFG.getNumNodes()];
+		int [] alap2States = new int [newCDFG.getNumNodes()];
+		
 		
 		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
 		{
 			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
 			alapStates[c] = alapCDFG.nodes[c].getState();
-//			System.out.println("Mobility of " + c + ": " + mobilities[c]);
+			alap2States[c] = alap2CDFG.nodes[c].getState();
+			asapStates[c] = asapCDFG.nodes[c].getState();
+//			System.out.println("ASAP of " + c + ": " + asapStates[c]);
+//			System.out.println("ALAP of " + c + ": " + alapStates[c]);
+//			System.out.println("ALAP2 of " + c + ": " + alap2States[c]);
 		}
 		
 	
@@ -70,9 +91,13 @@ public class Scheduler {
 		
 		CDFG tcCDFG;
 		tcCDFG = newCDFG.copy();
-	
 		
-//		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 6 );
+		CDFG tc2CDFG;
+		tc2CDFG = newCDFG.copy();
+		
+		tc2CDFG = performTC2(tc2CDFG, asapStates, alap2States, mobilities);
+		
+//		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 4);
 		
 //		tcCDFG.printCDFG();
 		
@@ -388,7 +413,7 @@ public class Scheduler {
 		{
 			// first check for nodes with no dependencies and perform them in the first state
 			
-			System.out.println("Checking node:" + x);
+//			System.out.println("Checking node:" + x);
 			
 			if (outCDFG.nodes[x].dependsOn(-1))
 			{
@@ -396,7 +421,7 @@ public class Scheduler {
 				outCDFG.nodes[x].setState(1); // perform in state 1
 				nodesComplete[x] = outCDFG.nodes[x].getID(); // add to complete list
 				nodesComplete_bool[x] = true;
-				System.out.println("Processed num =  " + count + " with state = " + 1);
+//				System.out.println("Processed num =  " + count + " with state = " + 1);
 				count++;
 				ACTION_FLAG = true;
 				
@@ -560,23 +585,32 @@ public class Scheduler {
 				// reset the flag
 				C_FLAG = true;
 				
+				
 				if (!doneList[cNode])
 				{
 				
-				for (int i = 0; i < numNodes; i++)
-				{
-					// call dependsOn(i) and check to see if it's true
-					if (outCDFG.dependency(cNode, i))
+//					System.out.println("Now checking: " + cNode);
+				//	C_FLAG = true;
+					
+					int [] dependOnMe = inCDFG.dependOn(cNode);
+					if (dependOnMe[0] == -1)
 					{
-						if (doneList[i] == false)
+						C_FLAG = true; // no dependents -- commit this node
+					} else 
+					{	
+						for (int x = 0; x < dependOnMe.length; x++)
 						{
-							// this node is not complete
-							C_FLAG = false; // cannot commit this node
+//							System.out.println("DEPEND LIST=" + dependOnMe[x]);
+//							System.out.println("Done list of that = " + doneList[dependOnMe[x]]);
+							if (!doneList[dependOnMe[x]])
+							{
+								C_FLAG = false;
+							}
 						}
+						
 					}
 					
-					
-				}
+				
 				
 				// if C_FLAG is still true, then commit this node
 				
@@ -604,16 +638,16 @@ public class Scheduler {
 			
 			// finalize commits
 			
-			System.arraycopy(commitList, 0, doneList, 0, numNodes); 
+			 
 			
 			}
 			
+			System.arraycopy(commitList, 0, doneList, 0, numNodes);
 		} // end state loop
 		
 		return outCDFG;
 		
 	}
-	
 	
 	
 	public static CDFG performALAP2(CDFG inCDFG, int numStates)
@@ -625,7 +659,6 @@ public class Scheduler {
 		
 		CDFG outCDFG = inCDFG;
 		outCDFG.setTitle("ALAP2 CDFG");
-		outCDFG.setState(numStates);
 		
 		// commit and done lists
 		boolean [] commitList = new boolean[numNodes];
@@ -660,23 +693,32 @@ public class Scheduler {
 				// reset the flag
 				C_FLAG = true;
 				
+				
 				if (!doneList[cNode])
 				{
 				
-				for (int i = 0; i < numNodes; i++)
-				{
-					// call dependsOn(i) and check to see if it's true
-					if (outCDFG.dependency(cNode, i))
+//					System.out.println("Now checking: " + cNode);
+				//	C_FLAG = true;
+					
+					int [] dependOnMe = inCDFG.dependOn(cNode);
+					if (dependOnMe[0] == -1)
 					{
-						if (doneList[i] == false)
+						C_FLAG = true; // no dependents -- commit this node
+					} else 
+					{	
+						for (int x = 0; x < dependOnMe.length; x++)
 						{
-							// this node is not complete
-							C_FLAG = false; // cannot commit this node
+//							System.out.println("DEPEND LIST=" + dependOnMe[x]);
+//							System.out.println("Done list of that = " + doneList[dependOnMe[x]]);
+							if (!doneList[dependOnMe[x]])
+							{
+								C_FLAG = false;
+							}
 						}
+						
 					}
 					
-					
-				}
+				
 				
 				// if C_FLAG is still true, then commit this node
 				
@@ -690,7 +732,7 @@ public class Scheduler {
 //					{
 //						System.out.println("Done " + x + ": " + doneList[x]);
 //					}
-					
+//					
 					
 					commitList[cNode] = true;
 					outCDFG.nodes[cNode].setState(curState); // change state number to current state
@@ -704,15 +746,18 @@ public class Scheduler {
 			
 			// finalize commits
 			
-			System.arraycopy(commitList, 0, doneList, 0, numNodes); 
+			 
 			
 			}
 			
+			System.arraycopy(commitList, 0, doneList, 0, numNodes);
 		} // end state loop
 		
 		return outCDFG;
 		
 	}
+	
+	
 
 	
 	/*
@@ -724,11 +769,11 @@ public class Scheduler {
 	{
 		System.out.println("Starting RC...");
 		
-		for (int b = 0; b < mobilities.length; b++)
-		{
-			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
-		}
-		
+//		for (int b = 0; b < mobilities.length; b++)
+//		{
+//			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
+//		}
+
 		CDFG outCDFG = inCDFG;
 		outCDFG.setTitle("RC CDFG");
 	
@@ -779,7 +824,7 @@ public class Scheduler {
 			{
 				// add this node to the ready list
 				readyList[x] = true;
-				System.out.println("Added Node: " + x);
+//				System.out.println("Added Node: " + x);
 						
 			}
 				
@@ -790,17 +835,17 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-		for (int a = 0; a < numNodes; a++)
-		{
-			System.out.println("Ready  " + a + " : " + readyList[a]);
-			
-		}
-		
-		for (int b = 0; b < numNodes; b++)
-		{
-			System.out.println("Commit " + b + ": " + commitList[b]);
-		}
-		
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//			System.out.println("Ready  " + a + " : " + readyList[a]);
+//			
+//		}
+//		
+//		for (int b = 0; b < numNodes; b++)
+//		{
+//			System.out.println("Commit " + b + ": " + commitList[b]);
+//		}
+//		
 		/*
 		 * End Diagnostics
 		 */
@@ -1156,16 +1201,16 @@ public class Scheduler {
 	{
 		if(maxCLK < numasapstates)	//exit if number of wanted states exceed asap - impossible scenario
 		{
-			System.out.println("Impossible time constraint - please increase number of required states");
+			System.out.println("Impossible time constraint - please increase number of required states.");
 			System.exit(1);
 		}
 		
 		System.out.println("Starting TC...");
 		
-		for (int b = 0; b < mobilities.length; b++)
-		{
-			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
-		}
+//		for (int b = 0; b < mobilities.length; b++)
+//		{
+//			System.out.println("Mobility of " + b + " : "  + mobilities[b]);
+//		}
 
 		CDFG outCDFG = inCDFG;
 		outCDFG.setTitle("TC CDFG");
@@ -1240,23 +1285,23 @@ public class Scheduler {
 			{
 				// add this node to the ready list
 				readyList[x] = true;
-				System.out.println("Added Node: " + x);		
+//				System.out.println("Added Node: " + x);		
 			}		
 		}
 		
 		/*
 		 * Diagnostics: Print ready & commit lists
 		 */
-		
-		for (int a = 0; a < numNodes; a++)
-		{
-			System.out.println("Ready  " + a + " : " + readyList[a]);
-		}
-		
-		for (int b = 0; b < numNodes; b++)
-		{
-			System.out.println("Commit " + b + ": " + commitList[b]);
-		}
+//		
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//			System.out.println("Ready  " + a + " : " + readyList[a]);
+//		}
+//		
+//		for (int b = 0; b < numNodes; b++)
+//		{
+//			System.out.println("Commit " + b + ": " + commitList[b]);
+//		}
 		
 		/*
 		 * End Diagnostics
@@ -1693,6 +1738,8 @@ public class Scheduler {
 	
 	public static CDFG performTC2(CDFG inCDFG, int [] asapState, int[] alap2State, int [] mobilities)
 	{
+		System.out.println("\nStarting TC2...");
+		
 		CDFG outCDFG = inCDFG;
 		int numNodes = inCDFG.getNumNodes();
 		
@@ -1703,17 +1750,28 @@ public class Scheduler {
 		int [] tf_start = asapState;
 		int [] tf_end = alap2State;
 		
-		int [] tf_prob = new int[numNodes];
+		double [] tf_prob = new double[numNodes];
 		
 		while (nodesDone < numNodes)
 		{
 			
 			// TODO: Compute timeframes
+			
 			for (int cNode = 0; cNode < numNodes; cNode++)
 			{
 				// for each incomplete node, calculate timeframe 
 				if (doneList[cNode] == false)
 				{
+					System.out.println("================");
+					System.out.println("At Node: " + cNode);
+					
+					System.out.println("Start: \t" + tf_start[cNode]);
+					System.out.println("End: \t" + tf_end[cNode]);
+					
+					tf_prob[cNode] = Math.abs(tf_end[cNode] - tf_start[cNode]) + 1;
+					tf_prob[cNode] = 1/(tf_prob[cNode]);
+				
+					System.out.println("Prob of " + cNode + ": " + tf_prob[cNode]);
 					
 					
 					
@@ -1732,8 +1790,8 @@ public class Scheduler {
 		
 			
 			
-			
-//		nodesDone++;	
+			// For diagnostics ** FIX LATER **
+			nodesDone = numNodes;	
 			
 		}
 		
