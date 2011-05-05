@@ -1763,9 +1763,9 @@ public class Scheduler {
 		CDFG outCDFG = inCDFG;
 		int numNodes = inCDFG.getNumNodes();
 		
-		int nodesDone = 0;
+		//int nodesDone = 0;
 		
-		boolean [] doneList = new boolean[numNodes];
+		//boolean [] doneList = new boolean[numNodes];
 		int [] tf_start = asapStates;
 		int [] tf_end = alap2States;
 		
@@ -1781,74 +1781,105 @@ public class Scheduler {
 				nodeForce[i][j] = -99;
 			}
 		
+		/*
 		double[] distALU = new double[clk+1];
 		double[] distMUL = new double[clk+1];
 		double[] distMIN = new double[clk+1];
 		double[] distMAX = new double[clk+1];
 		double[] distABS = new double[clk+1];
+		*/
+		
+		double[][] q = new double[5][clk+1];	// q[resource][state] -> resource distribution.
+		//*******LEGEND: 	0 = ALU		1 = MUL		2 = MIN		3 = MAX		4 = ABS	********//
 		
 		for (int j = 0; j<clk+1; j++)
 		{
+			q[0][j] = 0;
+			q[1][j] = 0;
+			q[2][j] = 0;
+			q[3][j] = 0;
+			q[4][j] = 0;
+			/*
 			distALU[j] = 0;
 			distMUL[j] = 0;
 			distMIN[j] = 0;
 			distMAX[j] = 0;
 			distABS[j] = 0;
+			*/
 		}
 		
 		//double [] tf_prob = new double[numNodes];
 		
 		
 		
-		while (nodesDone < numNodes)	////?????
-		{
+		//while (nodesDone < numNodes)	////?????
+		//{
 			for (int cNode = 0; cNode < numNodes; cNode++)
 			{
-				if (doneList[cNode] == false)
-				{	
 					for(int state=tf_start[cNode]; state <= tf_end[cNode]; state++)
 					{
 						nodeProb[state][cNode] = Math.abs(tf_end[cNode] - tf_start[cNode]) + 1;
 						nodeProb[state][cNode] = 1/(nodeProb[state][cNode]);
-						System.out.println("Inside loop. STATE: " + state + " Node: " + cNode);
-						System.out.println("Probability: " + nodeProb[state][cNode] + " and node op is: " + inCDFG.nodes[cNode].getOp());
 						
-						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu"))
-							distALU[state] = distALU[state] + nodeProb[state][cNode];
+						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu")){
+							//distALU[state] = distALU[state] + nodeProb[state][cNode];
+							q[0][state] = q[0][state] + nodeProb[state][cNode];
+						}
+						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("mul")){
+							//distMUL[state] = distMUL[state] + nodeProb[state][cNode];
+							q[1][state] = q[1][state] + nodeProb[state][cNode];
+						}
+						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("min")){
+							//distMIN[state] = distMIN[state] + nodeProb[state][cNode];
+							q[2][state] = q[2][state] + nodeProb[state][cNode];
+						}
+						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("max")){
+							//distMAX[state] = distMAX[state] + nodeProb[state][cNode];
+							q[3][state] = q[3][state] + nodeProb[state][cNode];
+						}
+						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("abs")){
+							//distABS[state] = distABS[state] + nodeProb[state][cNode];
+							q[4][state] = q[4][state] + nodeProb[state][cNode];
+						}
+						//	DIAGNOSTICS
 						
-						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("mul"))
-							distMUL[state] = distMUL[state] + nodeProb[state][cNode];
-						
-						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("min"))
-							distMIN[state] = distMIN[state] + nodeProb[state][cNode];
-						
-						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("max"))
-							distMAX[state] = distMAX[state] + nodeProb[state][cNode];
-						
-						if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("abs"))
-							distABS[state] = distABS[state] + nodeProb[state][cNode];
-						
-						System.out.println("-----------------------");
-						System.out.println("Resource distribution: ");
-						System.out.println("ALU in state: " + state + " is " + distALU[state]);
-						System.out.println("MUL in state: " + state + " is " + distMUL[state]);
-						System.out.println("MIN in state: " + state + " is " + distMIN[state]);
-						System.out.println("MAX in state: " + state + " is " + distMAX[state]);
-						System.out.println("ABS in state: " + state + " is " + distABS[state]);
-						System.out.println("-----------------------");
-					}
-					
-					
-					
-					doneList[cNode] = true;
-					
-				}
+						  /*	System.out.println("Inside loop. STATE: " + state + " Node: " + cNode);
+							System.out.println("Probability: " + nodeProb[state][cNode] + " and node op is: " + inCDFG.nodes[cNode].getOp());
+							System.out.println("Resource distribution: ");
+							System.out.println("ALU in state: " + state + " is " + distALU[state] + " and " + q[0][state]);
+							System.out.println("MUL in state: " + state + " is " + distMUL[state] + " and " + q[1][state]);
+							System.out.println("MIN in state: " + state + " is " + distMIN[state] + " and " + q[2][state]);
+							System.out.println("MAX in state: " + state + " is " + distMAX[state] + " and " + q[3][state]);
+							System.out.println("ABS in state: " + state + " is " + distABS[state] + " and " + q[4][state]);
+							System.out.println("-----------------------");
+						 	*/	
+					}		
 			}
 			
 			
+		/*	for (int cNode = 0; cNode < numNodes; cNode++)
+			{
+				for(int state = 1; state<clk+1; state++)
+				{
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("alu")){
+						distALU[state] = distALU[state] + nodeProb[state][cNode];
+						//q[]
+					}
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("mul"))
+						distMUL[state] = distMUL[state] + nodeProb[state][cNode];
+					
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("min"))
+						distMIN[state] = distMIN[state] + nodeProb[state][cNode];
+					
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("max"))
+						distMAX[state] = distMAX[state] + nodeProb[state][cNode];
+					
+					if(inCDFG.nodes[cNode].getOp().equalsIgnoreCase("abs"))
+						distABS[state] = distABS[state] + nodeProb[state][cNode];
+				}
+			}
+		*/	
 			
-			
-			// TODO: Compute operation & type probabilities
 			
 			// TODO: Compute self-forces & ps-forces & total forces
 			
@@ -1858,9 +1889,9 @@ public class Scheduler {
 			
 			
 			// For diagnostics ** FIX LATER **
-			nodesDone = numNodes;	
+			//nodesDone = numNodes;	
 			
-		}
+		//}
 		
 		
 		
