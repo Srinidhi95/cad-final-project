@@ -287,6 +287,46 @@ public class CDFG {
 		
 		
 	}
+	
+	/*
+	 * Returns a list of nodes that depend on the given node
+	 */
+	
+	public int [] dependOn(int nID)
+	{
+	
+		int [] temp_conn = new int [numNodes];
+		int count = 0;
+		
+		for (int cNode = 0; cNode < numNodes; cNode++)
+		{
+			// Go through each nodes conn List
+			for (int i = 0; i < nodes[cNode].conn.length; i++)
+			{
+				if (nodes[cNode].conn[i] == nID)
+				{
+					// add it to the temp list and increment by 1
+					temp_conn[count] = cNode;
+					count++;
+				}
+			}
+			
+		}
+		
+		if (count == 0)
+		{
+			// no dependencies
+			int [] connList = new int [1];
+			connList[0] = -1;
+			return connList;
+		}
+		
+		int [] connList = new int [count];
+		System.arraycopy(temp_conn, 0, connList, 0, count);
+		return connList;
+		
+		
+	}
 
 	
 }
