@@ -1,0 +1,43 @@
+Original CDFG
+# of States: 1
+=====================
+ID 		= 	0
+State 	= 	1
+Op 		= 	alu
+No Dependencies.
+----------------------------
+ID 		= 	1
+State 	= 	1
+Op 		= 	alu
+No Dependencies.
+----------------------------
+ID 		= 	2
+State 	= 	1
+Op 		= 	alu
+Dep.	=	(0,1)
+# of Dependencies = 2
+----------------------------
+ID 		= 	3
+State 	= 	1
+Op 		= 	min
+Dep.	=	(2)
+# of Dependencies = 1
+----------------------------
+ID 		= 	4
+State 	= 	1
+Op 		= 	max
+Dep.	=	(3)
+# of Dependencies = 1
+----------------------------
+ID 		= 	5
+State 	= 	1
+Op 		= 	max
+Dep.	=	(3)
+# of Dependencies = 1
+----------------------------
+ID 		= 	6
+State 	= 	1
+Op 		= 	alu
+Dep.	=	(1)
+# of Dependencies = 1
+----------------------------
