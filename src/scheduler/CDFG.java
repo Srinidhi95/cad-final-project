@@ -195,6 +195,12 @@ public class CDFG {
 	
 	}
 	
+	public Node getNode(int y)
+	{
+		return nodes[y];
+		
+	}
+	
 	public void printCDFG()
 	{
 		System.out.println(this.getTitle());
