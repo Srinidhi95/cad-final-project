@@ -1762,15 +1762,32 @@ public class Scheduler {
 		
 		CDFG outCDFG = inCDFG;
 		int numNodes = inCDFG.getNumNodes();
-		
+		int[] chosenstate = new int[numNodes];
 		//int nodesDone = 0;
 		
 		//boolean [] doneList = new boolean[numNodes];
 		int [] tf_start = asapStates;
 		int [] tf_end = alap2States;
 		
+		int [] temp_tf_start = asapStates;
+		int [] temp_tf_end = alap2States;
+		
 		double[][] nodeProb = new double[clk+1][numNodes];	//ignore position 0 for states
 		double[][] nodeselfForce = new double[clk+1][numNodes];	//ignore position 0 for states
+		double[][][] nodeprevForce = new double[numNodes][clk+1][numNodes];
+		double[][][] nodenextForce = new double[numNodes][clk+1][numNodes];
+		
+		int[][][][] chosenodeProb = new int[numNodes][clk+1][clk+1][numNodes];
+		
+		for(int i = 0; i<numNodes; i++)	//populating prev and next prob arrays
+			for (int j = 0; j<clk+1; j++)
+				for(int z = 0; z<clk+1; z++)
+					for(int p = 0; p<clk+1; p++)
+			{
+				chosenodeProb[i][j][z][p] = 0;
+			}
+		
+		
 		
 		// *******MUST USE CLK+1 FOR STATES BECAUSE STATES RUN 1-TOTAL INSTEAD OF 0-(TOTAL-1)
 		
@@ -1781,13 +1798,13 @@ public class Scheduler {
 				nodeselfForce[i][j] = -99;
 			}
 		
-		/*
-		double[] distALU = new double[clk+1];
-		double[] distMUL = new double[clk+1];
-		double[] distMIN = new double[clk+1];
-		double[] distMAX = new double[clk+1];
-		double[] distABS = new double[clk+1];
-		*/
+		for(int u = 0; u < numNodes; u++)
+			for(int i = 0; i<clk+1; i++)	//populate probabilities with zeros and forces with high negative forces
+				for (int j = 0; j<numNodes; j++)
+				{
+					nodeprevForce[u][i][j] = 0;
+					nodenextForce[u][i][j] = 0;
+				}
 		
 		double[][] q = new double[5][clk+1];	// q[resource][state] -> resource distribution.
 		//*******LEGEND: 	0 = ALU		1 = MUL		2 = MIN		3 = MAX		4 = ABS	********//
@@ -1799,19 +1816,12 @@ public class Scheduler {
 			q[2][j] = 0;
 			q[3][j] = 0;
 			q[4][j] = 0;
-			/*
-			distALU[j] = 0;
-			distMUL[j] = 0;
-			distMIN[j] = 0;
-			distMAX[j] = 0;
-			distABS[j] = 0;
-			*/
 		}
 		
 		//double [] tf_prob = new double[numNodes];
 		//while (nodesDone < numNodes)	////?????
 		//{
-			for (int cNode = 0; cNode < numNodes; cNode++)
+			for (int cNode = 0; cNode < numNodes; cNode++)	//calculates nodeProb and q
 			{
 					for(int state=tf_start[cNode]; state <= tf_end[cNode]; state++)
 					{
@@ -1853,9 +1863,12 @@ public class Scheduler {
 					}		
 			}
 			
+			
+			
+			
 			int qUsed = 0;
 			
-			for (int cNode = 0; cNode < numNodes; cNode++)
+			for (int cNode = 0; cNode < numNodes; cNode++)	//calculates forces
 			{
 				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
 				{
@@ -1882,14 +1895,32 @@ public class Scheduler {
 							nodeselfForce[state][cNode] = 0;	//reset nodeselfForce to 0 from -99 for existing node probabilities
 					}
 							
+					// TODO: Work here
 					
-					for(int fstate = tf_start[cNode]; fstate <= tf_end[cNode]; fstate++)
+									if(inCDFG.dependOn(cNode)[0]!=-1)	//if there are connections to next
+									{
+										for(int nNode = 0; nNode<inCDFG.dependOn(cNode).length; nNode++)	//iterate through nodes cNode leads to and sets the starting temp state for nNode to cNode state + 1
+											chosenstate[nNode] = state + 1;
+									}
+				
+									if(inCDFG.nodes[cNode].getConn()[0]!=-1)	//if there are connections to previous
+									{
+										for(int pNode = 0; pNode<inCDFG.nodes[cNode].getConn().length; pNode++)	//iterate through nodes cNode leads to and sets the ending temp state for nNode to cNode state - 1
+											chosenstate[pNode] = state - 1;
+									}
+					
+					// ^^ just selected states for previous and next nodes
+					
+					for(int fstate = tf_start[cNode]; fstate <= tf_end[cNode]; fstate++)	//Calculates total self force for chosen state for this node
 					{
 						if(fstate==state)
 							nodeselfForce[state][cNode] = nodeselfForce[state][cNode] + q[qUsed][fstate]*(1-nodeProb[state][cNode]);
 						else
 							nodeselfForce[state][cNode] = nodeselfForce[state][cNode] + q[qUsed][fstate]*(0-nodeProb[state][cNode]);
 					}
+				
+					
+					
 					//Diagnostics
 					/*
 					System.out.println("*********************************************************************");
