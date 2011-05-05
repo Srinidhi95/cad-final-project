@@ -29,6 +29,8 @@ public class Scheduler {
 		
 		System.out.println("Number of states = " + newCDFG.getState()); // Should be 1 before ASAP/ALAP
 		
+		newCDFG.printCDFG();
+		
 		CDFG asapCDFG;
 		asapCDFG = newCDFG.copy();
 		asapCDFG = performASAP(asapCDFG);
@@ -39,15 +41,16 @@ public class Scheduler {
 		alapCDFG = performALAP(alapCDFG);
 
 		
-		alapCDFG.printCDFG();
+		
 
 //		newCDFG.printCDFG("newCDFG.txt");
 //		asapCDFG.printCDFG("asapCDFG.txt");
 		
 //		newCDFG.printCDFG();
+		System.out.println();
 		asapCDFG.printCDFG();
-//		alapCDFG.printCDFG();
-		
+		System.out.println();
+		alapCDFG.printCDFG();
 
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
@@ -69,14 +72,14 @@ public class Scheduler {
 		tcCDFG = newCDFG.copy();
 	
 		
-		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 6 );
+//		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 6 );
 		
-		tcCDFG.printCDFG();
+//		tcCDFG.printCDFG();
 		
 		// hack mobilities array for diagnostics
 		mobilities[0] = 1;
 		
-		performRC(rcCDFG, mobilities, alapStates);
+//		performRC(rcCDFG, mobilities, alapStates);
 //		rcCDFG.printCDFG();
 
 		
@@ -384,16 +387,18 @@ public class Scheduler {
 		for (int x = 0; x < numNodes; x++)
 		{
 			// first check for nodes with no dependencies and perform them in the first state
+			
+			System.out.println("Checking node:" + x);
+			
 			if (outCDFG.nodes[x].dependsOn(-1))
 			{
 				// this node has no dependencies
 				outCDFG.nodes[x].setState(1); // perform in state 1
-				nodesComplete[count] = outCDFG.nodes[x].getID(); // add to complete list
-				nodesComplete_bool[count] = true;
-//				System.out.println("Processed num =  " + count + " with state = " + (numStates));
+				nodesComplete[x] = outCDFG.nodes[x].getID(); // add to complete list
+				nodesComplete_bool[x] = true;
+				System.out.println("Processed num =  " + count + " with state = " + 1);
 				count++;
 				ACTION_FLAG = true;
-				
 				
 			}
 				
