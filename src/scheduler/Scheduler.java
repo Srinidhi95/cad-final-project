@@ -67,8 +67,7 @@ public class Scheduler {
 		
 		CDFG tcCDFG;
 		tcCDFG = newCDFG.copy();
-		
-		//public static CDFG performTC(CDFG inCDFG, int numasapstates, int [] mobilities, int[] alapState, int maxCLK)
+	
 		
 		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 6 );
 		
@@ -1686,20 +1685,8 @@ public class Scheduler {
 	return outCDFG;	
 } // end TC method
 	
-	public static CDFG performTC1(CDFG inCDFG, int maxCLK)
-	{
-		CDFG outCDFG = inCDFG;
 	
-		// TODO: Need to input ALAP states list to generate urgency
-		
-		
-		
-		
-		
-		return outCDFG;
-	}
-	
-	public static CDFG performTC2(CDFG inCDFG)
+	public static CDFG performTC2(CDFG inCDFG, int [] asapState, int[] alap2State, int [] mobilities)
 	{
 		CDFG outCDFG = inCDFG;
 		int numNodes = inCDFG.getNumNodes();
@@ -1708,12 +1695,30 @@ public class Scheduler {
 		
 		boolean [] doneList = new boolean[numNodes];
 		
+		int [] tf_start = asapState;
+		int [] tf_end = alap2State;
+		
+		int [] tf_prob = new int[numNodes];
+		
 		while (nodesDone < numNodes)
 		{
 			
 			// TODO: Compute timeframes
+			for (int cNode = 0; cNode < numNodes; cNode++)
+			{
+				// for each incomplete node, calculate timeframe 
+				if (doneList[cNode] == false)
+				{
+					
+					
+					
+					
+					
+				}
+			}
 			
-			// TODO: Compute operatation & type probabilities
+			
+			// TODO: Compute operation & type probabilities
 			
 			// TODO: Compute self-forces & ps-forces & total forces
 			
