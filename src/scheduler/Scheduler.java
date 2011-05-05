@@ -95,7 +95,8 @@ public class Scheduler {
 		CDFG tc2CDFG;
 		tc2CDFG = newCDFG.copy();
 		
-		tc2CDFG = performTC2(tc2CDFG, asapStates, alap2States, mobilities);
+		//public static CDFG performTC2(CDFG inCDFG, CDFG alapCDFG, CDFG asapCDFG, int clk)
+		tc2CDFG = performTC2(tc2CDFG, alapCDFG, asapCDFG, 5);
 		
 //		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 4);
 		
@@ -1736,9 +1737,28 @@ public class Scheduler {
 } // end TC method
 	
 	
-	public static CDFG performTC2(CDFG inCDFG, int [] asapState, int[] alap2State, int [] mobilities)
+	public static CDFG performTC2(CDFG inCDFG, CDFG alapCDFG, CDFG asapCDFG, int clk)
 	{
+		// I put in int clk here to be used as max number of states
+		
 		System.out.println("\nStarting TC2...");
+				
+		CDFG alap2CDFG;
+		alap2CDFG = asapCDFG.copy();
+		alap2CDFG = performALAP2(alap2CDFG, clk);
+		int [] mobilities = new int [inCDFG.getNumNodes()];
+		int [] alapStates = new int [inCDFG.getNumNodes()];
+		int [] asapStates = new int [inCDFG.getNumNodes()];
+		int [] alap2States = new int [inCDFG.getNumNodes()];
+		
+		
+		for (int c = 0; c < asapCDFG.getNumNodes(); c++)
+		{
+			mobilities[c] = (alapCDFG.nodes[c].getState() - asapCDFG.nodes[c].getState());
+			alapStates[c] = alapCDFG.nodes[c].getState();
+			alap2States[c] = alap2CDFG.nodes[c].getState();
+			asapStates[c] = asapCDFG.nodes[c].getState();
+		}
 		
 		CDFG outCDFG = inCDFG;
 		int numNodes = inCDFG.getNumNodes();
@@ -1746,9 +1766,18 @@ public class Scheduler {
 		int nodesDone = 0;
 		
 		boolean [] doneList = new boolean[numNodes];
+		int [] tf_start = asapStates;
+		int [] tf_end = alap2States;
 		
-		int [] tf_start = asapState;
-		int [] tf_end = alap2State;
+		double[][] nodeProb = new double[clk+1][numNodes];	//ignore position 0 for states
+		double[][] nodeForce = new double[clk+1][numNodes];	//ignore position 0 for states
+		
+		for(int i = 0; i<clk+1; i++)	//populate probabilities with zeros and forces with high negative forces
+			for (int j = 0; j<numNodes; j++)
+			{
+				nodeProb[i][j] = 0;
+				nodeForce[i][j] = -99;
+			}
 		
 		double [] tf_prob = new double[numNodes];
 		
@@ -1767,16 +1796,20 @@ public class Scheduler {
 					
 					System.out.println("Start: \t" + tf_start[cNode]);
 					System.out.println("End: \t" + tf_end[cNode]);
-					
+						
 					tf_prob[cNode] = Math.abs(tf_end[cNode] - tf_start[cNode]) + 1;
 					tf_prob[cNode] = 1/(tf_prob[cNode]);
-				
+					
 					System.out.println("Prob of " + cNode + ": " + tf_prob[cNode]);
 					
-					
-					
-					
-					
+					for(int state=tf_start[cNode]; state <= tf_end[cNode]; state++)
+					{
+						nodeProb[state][cNode] = Math.abs(tf_end[cNode] - tf_start[cNode]) + 1;
+						nodeProb[state][cNode] = 1/(nodeProb[state][cNode]);
+						System.out.println("Inside loop. STATE: " + state + " Node: " + cNode);
+						System.out.println("Probability: " + nodeProb[state][cNode]);
+					}
+				
 				}
 			}
 			
