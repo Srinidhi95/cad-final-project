@@ -3,18 +3,10 @@ package scheduler;
 public class Node {
 
 	
-	// TODO: Should variables all be private?
-	
 	private int ID; // ID of the node
 	public int state; // State that the node is in
 	public String op; // Operation that it performs
 	public int [] conn; // Array of connections (each entry is the ID of another node)
-	
-	// TODO: Add mobility variable and methods
-	
-	public static int numOfNodes = 0;
-	
-	// TODO: Some kind of reset function for numOfNodes?
 	
 	
 	// Constructor for Node
