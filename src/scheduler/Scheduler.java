@@ -27,14 +27,6 @@ public class Scheduler {
 		newCDFG = readFile(args[0]); // read and parse the file
 		newCDFG.setTitle("Original CDFG");
 		
-//		int [] dependList = newCDFG.dependOn(6);
-//		
-//		for (int j = 0; j < dependList.length; j++)
-//		{
-//			System.out.println("dependtest: " + dependList[j]);
-//		}
-//		
-		
 		
 		System.out.println("Number of states = " + newCDFG.getState()); // Should be 1 before ASAP/ALAP
 		
@@ -58,13 +50,9 @@ public class Scheduler {
 		
 
 //		newCDFG.printCDFG("newCDFG.txt");
-//		asapCDFG.printCDFG("asapCDFG.txt");
+		asapCDFG.printCDFG("asapCDFG.txt");
+		alapCDFG.printCDFG("alapCDFG.txt");
 		
-//		newCDFG.printCDFG();
-//		System.out.println();
-//		asapCDFG.printCDFG();
-//		System.out.println();
-//		alapCDFG.printCDFG();
 
 		
 		int [] mobilities = new int [newCDFG.getNumNodes()];
@@ -88,26 +76,39 @@ public class Scheduler {
 
 		CDFG rcCDFG;
 		rcCDFG = asapCDFG.copy();
+		if (operation == 3)
+		{
+			performRC(rcCDFG, mobilities, alapStates);
+			rcCDFG.printCDFG("rcCDFG.txt");
+			
+		}
 		
-		CDFG tcCDFG;
-		tcCDFG = newCDFG.copy();
 		
+		if (operation == 4)
+		{
+			CDFG tcCDFG;
+			tcCDFG = newCDFG.copy();
+			tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, tcCDFG.getCLK());
+			tcCDFG.printCDFG("tc1CDFG.txt");
+		}
+		
+	
+		if (operation == 5)
+		{
 		CDFG tc2CDFG;
 		tc2CDFG = newCDFG.copy();
-		
-		// TODO: This is a stub for easy testing reference
 		tc2CDFG = performTC2(tc2CDFG, alapCDFG, asapCDFG, 4);
+		tc2CDFG.printCDFG("tc2CDFG.txt");
+		}
 		
-//		tcCDFG = performTC(tcCDFG, asapCDFG.getNumStates(), mobilities, alapStates, 4);
-		
-//		tcCDFG.printCDFG();
-		
-		// hack mobilities array for diagnostics
-		mobilities[0] = 1;
-		
-//		performRC(rcCDFG, mobilities, alapStates);
-//		rcCDFG.printCDFG();
 
+	
+		
+		
+
+
+		
+	
 		
 
 		//System.out.println("Operation = " + operation);
