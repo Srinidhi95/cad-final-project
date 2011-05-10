@@ -67,10 +67,12 @@ public class Scheduler {
 			alapStates[c] = alapCDFG.nodes[c].getState();
 			alap2States[c] = alap2CDFG.nodes[c].getState();
 			asapStates[c] = asapCDFG.nodes[c].getState();
+			System.out.println("Mobility of " + c + " is :" + mobilities[c]);
 //			System.out.println("ASAP of " + c + ": " + asapStates[c]);
 //			System.out.println("ALAP of " + c + ": " + alapStates[c]);
 //			System.out.println("ALAP2 of " + c + ": " + alap2States[c]);
 		}
+		
 		
 	
 
@@ -826,7 +828,7 @@ public class Scheduler {
 			{
 				// add this node to the ready list
 				readyList[x] = true;
-//				System.out.println("Added Node: " + x);
+				System.out.println("Added Node: " + x);
 						
 			}
 				
@@ -837,12 +839,12 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-//		for (int a = 0; a < numNodes; a++)
-//		{
-//			System.out.println("Ready  " + a + " : " + readyList[a]);
-//			
-//		}
-//		
+		for (int a = 0; a < numNodes; a++)
+		{
+		System.out.println("Ready  " + a + " : " + readyList[a]);
+			
+		}
+	
 //		for (int b = 0; b < numNodes; b++)
 //		{
 //			System.out.println("Commit " + b + ": " + commitList[b]);
@@ -1115,13 +1117,16 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
+		System.out.println("-------------");
 		
-//		for (int a = 0; a < numNodes; a++)
-//		{
-//			System.out.println("Ready(before)  " + a + " : " + readyList[a]);
-//			
-//		}
-//		
+		for (int a = 0; a < numNodes; a++)
+		{
+			System.out.println("Ready)  " + a + " : " + readyList[a]);
+			System.out.println("Mobility of " + a + " is: " + mobilities[a]);	
+			System.out.println("Urgency of " + a + " is: " + urgency[a]);
+		}
+		
+		
 //		for (int b = 0; b < numNodes; b++)
 //		{
 //			System.out.println("Commit(before) " + b + ": " + commitList[b]);
@@ -1367,10 +1372,16 @@ public class Scheduler {
 		
 		// calculate urgency
 		
-		for (int k = 0; k < numNodes; k++)
-		{
-			urgency[k] = alapState[k] - curState;
-		}
+		
+			for (int k = 0; k < numNodes; k++)
+			{
+				if(commitList[k] == false)
+				{
+					urgency[k] = alapState[k] - curState;
+					System.out.println("Slack of node " + k + " is " + urgency[k]);
+				}
+					
+			}
 		
 /*		int maxUrgency = 0;
 		
@@ -1459,7 +1470,7 @@ public class Scheduler {
 							////// ***************mul!!!!**********************************////////////////////////
 							if(readyList[curnode]==true&&outCDFG.nodes[curnode].getOp().equalsIgnoreCase("mul"))	//this node needs this resource, or move on
 							{
-								
+							// TODO: Print readylist and urgency	
 								if(urgency[curnode]==0){ //urgency is 0 - need extra resources?
 									if(numMUL==0) //extra resources are needed
 									{
