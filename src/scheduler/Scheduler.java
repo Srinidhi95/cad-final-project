@@ -67,7 +67,7 @@ public class Scheduler {
 			alapStates[c] = alapCDFG.nodes[c].getState();
 			alap2States[c] = alap2CDFG.nodes[c].getState();
 			asapStates[c] = asapCDFG.nodes[c].getState();
-			System.out.println("Mobility of " + c + " is :" + mobilities[c]);
+			//System.out.println("Mobility of " + c + " is :" + mobilities[c]);
 //			System.out.println("ASAP of " + c + ": " + asapStates[c]);
 //			System.out.println("ALAP of " + c + ": " + alapStates[c]);
 //			System.out.println("ALAP2 of " + c + ": " + alap2States[c]);
@@ -781,6 +781,7 @@ public class Scheduler {
 		CDFG outCDFG = inCDFG;
 		outCDFG.setTitle("RC CDFG");
 	
+		
 		// read in the resource list
 		int numALU = inCDFG.getALU();
 		int numMUL = inCDFG.getMUL();
@@ -806,6 +807,23 @@ public class Scheduler {
 		boolean [] commitList = new boolean[numNodes];
 		boolean [] doneList = new boolean[numNodes]; 
 		
+		try 
+		{
+			FileWriter fstream = new FileWriter("rc_steps.txt", true);
+			BufferedWriter output = new BufferedWriter(fstream);
+			
+			output.write("RC Operation Steps\n");
+			output.write("Title: ");
+			output.write(outCDFG.getTitle());
+			output.newLine();
+			
+			output.close();
+			
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
 		
 		// Check mobilities array
 		
@@ -828,7 +846,7 @@ public class Scheduler {
 			{
 				// add this node to the ready list
 				readyList[x] = true;
-				System.out.println("Added Node: " + x);
+				//System.out.println("Added Node: " + x);
 						
 			}
 				
@@ -839,11 +857,11 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-		for (int a = 0; a < numNodes; a++)
-		{
-		System.out.println("Ready  " + a + " : " + readyList[a]);
-			
-		}
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//		System.out.println("Ready  " + a + " : " + readyList[a]);
+//			
+//		}
 	
 //		for (int b = 0; b < numNodes; b++)
 //		{
@@ -1117,14 +1135,14 @@ public class Scheduler {
 		 * Diagnostics: Print ready & commit lists
 		 */
 		
-		System.out.println("-------------");
-		
-		for (int a = 0; a < numNodes; a++)
-		{
-			System.out.println("Ready)  " + a + " : " + readyList[a]);
-			System.out.println("Mobility of " + a + " is: " + mobilities[a]);	
-			System.out.println("Urgency of " + a + " is: " + urgency[a]);
-		}
+//		System.out.println("-------------");
+//		
+//		for (int a = 0; a < numNodes; a++)
+//		{
+//			System.out.println("Ready)  " + a + " : " + readyList[a]);
+//			System.out.println("Mobility of " + a + " is: " + mobilities[a]);	
+//			System.out.println("Urgency of " + a + " is: " + urgency[a]);
+//		}
 		
 		
 //		for (int b = 0; b < numNodes; b++)
@@ -1135,6 +1153,55 @@ public class Scheduler {
 		/*
 		 * End Diagnostics
 		 */
+		
+		try 
+		{
+			FileWriter fstream = new FileWriter("rc_steps.txt", true);
+			BufferedWriter output = new BufferedWriter(fstream);
+		
+			String rlist;
+			String moblist;
+			String urglist;
+			
+			output.write ("--------------------------------------------------------------------");
+			output.newLine();
+			output.write("State #: " + Integer.toString(curState));
+			output.newLine();
+			output.write("Ready List:\t");
+			for (int x = 0; x < numNodes; x++)
+			{
+				if (readyList[x] == true)
+				{
+					output.write(Integer.toString(x) + '\t');
+				}
+			}
+			output.newLine();
+			output.write("Mobility: \t");
+			for (int y = 0; y < numNodes; y++)
+			{
+				if (readyList[y] == true)
+				{
+					output.write(Integer.toString(mobilities[y]) + '\t');
+				}
+			}
+			output.newLine();
+			output.write("Urgency: \t");
+			for (int z = 0; z < numNodes; z++)
+			{
+				if (readyList[z] == true)
+				{
+					output.write(Integer.toString(urgency[z]) + '\t');
+				}
+			}
+			
+			output.newLine();
+			output.close();
+			
+		}catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
 		
 		
 		// To commit, change state of each node in the commit list to the current state
