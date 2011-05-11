@@ -1879,14 +1879,18 @@ public class Scheduler {
 		
 		int[][][][] chosenodeProb = new int[numNodes][clk+1][clk+1][numNodes];
 		
-		for(int i = 0; i<numNodes; i++)	//populating prev and next prob arrays
+		boolean[] doneList = new boolean[numNodes];
+		
+		for(int i = 0; i<numNodes; i++)
+		{//populating prev and next prob arrays
+			doneList[i] = false;
 			for (int j = 0; j<clk+1; j++)
 				for(int z = 0; z<clk+1; z++)
 					for(int p = 0; p<clk+1; p++)
 			{
 				chosenodeProb[i][j][z][p] = 0;
 			}
-		
+		}
 		
 		
 		// *******MUST USE CLK+1 FOR STATES BECAUSE STATES RUN 1-TOTAL INSTEAD OF 0-(TOTAL-1)
@@ -2159,10 +2163,11 @@ public class Scheduler {
 			{
 				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
 				{
-					if(totalForce[state][cNode]==maxForce[cNode])
+					if(totalForce[state][cNode]==maxForce[cNode]&&doneList[cNode]==false)
 					{
 						finalstate[cNode] = state;
 						outCDFG.setState(state);
+						doneList[cNode] = true;
 						System.out.println("-------------------------");
 						
 						System.out.println("Final state of node " + cNode + " is " + state);
