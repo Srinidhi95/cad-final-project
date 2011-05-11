@@ -1408,7 +1408,8 @@ public class Scheduler {
 		
 		
 		// Add any ready nodes to the ready list
-		
+		System.out.println("-------------------------------");
+		System.out.println("Ready list for state: " + curState);
 		for (int i = 0; i < numNodes; i++)
 		{
 			// Go through each node and add it to the ready list if all its dependencies have been committed
@@ -1431,33 +1432,26 @@ public class Scheduler {
 			{
 				// no dependencies found
 				readyList[i] = true; // add to the ready list
-//				System.out.println("Added " + i + " to readylist");
+				System.out.println("Added " + i + " to readylist");
 			}
-			
+			//System.out.println("Readylist of " + i + " : " + readyList[i]);			//TODO: Prints readylist
 		}
 		
 		
 		// calculate urgency
 		
-		
+			
+			
 			for (int k = 0; k < numNodes; k++)
 			{
-				if(commitList[k] == false)
+				urgency[k] = alapState[k] - curState;
+				if(doneList[k] == false)		//TODO: If node is not done, prints urgency
 				{
-					urgency[k] = alapState[k] - curState;
 					System.out.println("Slack of node " + k + " is " + urgency[k]);
 				}
 					
 			}
-		
-/*		int maxUrgency = 0;
-		
-		for(int thisnode = 0; thisnode <=numNodes; thisnode++)
-		{
-			if(readyList[thisnode]==true&&urgency[thisnode]>maxUrgency)
-				maxUrgency = urgency[thisnode];
-		}
-	*/	
+
 		//Resource stuff starts here
 		if(outCDFG.getALU()!=0)	//We have ALUs to allocate in general
 		{	
@@ -1484,6 +1478,8 @@ public class Scheduler {
 										for(int i = 0; i<temp.length; i++){
 											aluList[i] = temp[i]; 
 										}
+										
+										System.out.println("New ALU created. Total: " + aluList.length);	//TODO: Declares an extra allocated ALU
 									}
 									//use alu spot for this node - change node to the state number and commit it
 									outCDFG.nodes[curnode].setState(curState);
@@ -1491,6 +1487,7 @@ public class Scheduler {
 									readyList[curnode]=false;
 									commitList[curnode]=true;
 									aluList[aluindex] = curnode;
+									System.out.println("ALU #" + (aluindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 									aluindex++;
 								}
 								
@@ -1503,6 +1500,7 @@ public class Scheduler {
 										readyList[curnode]=false;
 										commitList[curnode]=true;
 										aluList[aluindex] = curnode;
+										System.out.println("ALU #" + (aluindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 										aluindex++;
 									}
 									else
@@ -1519,6 +1517,7 @@ public class Scheduler {
 												readyList[curnode]=false;
 												commitList[curnode]=true;
 												aluList[aluindex] = curnode;
+												System.out.println("ALU #" + (aluindex + 1) + " in state " + curState + " is re-allocated to node " + curnode);
 											}
 										}
 									}
@@ -1552,13 +1551,17 @@ public class Scheduler {
 										for(int i = 0; i<temp.length; i++){
 											mulList[i] = temp[i]; 
 										}
+										System.out.println("New MUL created. Total: " + mulList.length);
 									}
+									
+									
 									//use mul spot for this node - change node to the state number and commit it
 									outCDFG.nodes[curnode].setState(curState);
 									numMUL--;
 									readyList[curnode]=false;
 									commitList[curnode]=true;
 									mulList[mulindex] = curnode;
+									System.out.println("MUL #" + (mulindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 									mulindex++;
 								}
 								
@@ -1571,6 +1574,7 @@ public class Scheduler {
 										readyList[curnode]=false;
 										commitList[curnode]=true;
 										mulList[mulindex] = curnode;
+										System.out.println("MUL #" + (mulindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 										mulindex++;
 									}
 									else
@@ -1587,6 +1591,7 @@ public class Scheduler {
 												readyList[curnode]=false;
 												commitList[curnode]=true;
 												mulList[mulindex] = curnode;
+												System.out.println("MUL #" + (mulindex + 1) + " in state " + curState + " is re-allocated to node " + curnode);
 											}
 										}
 									}
@@ -1620,6 +1625,8 @@ public class Scheduler {
 										for(int i = 0; i<temp.length; i++){
 											minList[i] = temp[i]; 
 										}
+										
+										System.out.println("New MIN created. Total: " + minList.length);
 									}
 									//use min spot for this node - change node to the state number and commit it
 									outCDFG.nodes[curnode].setState(curState);
@@ -1627,6 +1634,7 @@ public class Scheduler {
 									readyList[curnode]=false;
 									commitList[curnode]=true;
 									minList[minindex] = curnode;
+									System.out.println("MIN #" + (minindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 									minindex++;
 								}
 								
@@ -1639,6 +1647,7 @@ public class Scheduler {
 										readyList[curnode]=false;
 										commitList[curnode]=true;
 										minList[minindex] = curnode;
+										System.out.println("MIN #" + (minindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 										minindex++;
 									}
 									else
@@ -1655,6 +1664,7 @@ public class Scheduler {
 												readyList[curnode]=false;
 												commitList[curnode]=true;
 												minList[minindex] = curnode;
+												System.out.println("MIN #" + (minindex + 1) + " in state " + curState + " is re-allocated to node " + curnode);
 											}
 										}
 									}
@@ -1688,6 +1698,7 @@ public class Scheduler {
 										for(int i = 0; i<temp.length; i++){
 											maxList[i] = temp[i]; 
 										}
+										System.out.println("New MAX created. Total: " + maxList.length);
 									}
 									//use max spot for this node - change node to the state number and commit it
 									outCDFG.nodes[curnode].setState(curState);
@@ -1695,6 +1706,7 @@ public class Scheduler {
 									readyList[curnode]=false;
 									commitList[curnode]=true;
 									maxList[maxindex] = curnode;
+									System.out.println("MAX #" + (maxindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 									maxindex++;
 								}
 								
@@ -1707,6 +1719,7 @@ public class Scheduler {
 										readyList[curnode]=false;
 										commitList[curnode]=true;
 										maxList[maxindex] = curnode;
+										System.out.println("MAX #" + (maxindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 										maxindex++;
 									}
 									else
@@ -1723,6 +1736,7 @@ public class Scheduler {
 												readyList[curnode]=false;
 												commitList[curnode]=true;
 												maxList[maxindex] = curnode;
+												System.out.println("MAX #" + (maxindex + 1) + " in state " + curState + " is re-allocated to node " + curnode);
 											}
 										}
 									}
@@ -1756,6 +1770,7 @@ public class Scheduler {
 										for(int i = 0; i<temp.length; i++){
 											absList[i] = temp[i]; 
 										}
+										System.out.println("New ABS created. Total: " + absList.length);
 									}
 									//use abs spot for this node - change node to the state number and commit it
 									outCDFG.nodes[curnode].setState(curState);
@@ -1763,6 +1778,7 @@ public class Scheduler {
 									readyList[curnode]=false;
 									commitList[curnode]=true;
 									absList[absindex] = curnode;
+									System.out.println("ABS #" + (absindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 									absindex++;
 								}
 								
@@ -1775,6 +1791,7 @@ public class Scheduler {
 										readyList[curnode]=false;
 										commitList[curnode]=true;
 										absList[absindex] = curnode;
+										System.out.println("ABS #" + (absindex + 1) + " in state " + curState + " is allocated to node " + curnode);
 										absindex++;
 									}
 									else
@@ -1791,6 +1808,7 @@ public class Scheduler {
 												readyList[curnode]=false;
 												commitList[curnode]=true;
 												absList[absindex] = curnode;
+												System.out.println("ABS #" + (absindex + 1) + " in state " + curState + " is re-allocated to node " + curnode);
 											}
 										}
 									}
