@@ -1871,8 +1871,11 @@ public class Scheduler {
 		
 		double[][] nodeProb = new double[clk+1][numNodes];	//ignore position 0 for states
 		double[][] nodeselfForce = new double[clk+1][numNodes];	//ignore position 0 for states
-		double[][][] nodeprevForce = new double[numNodes][clk+1][numNodes];
-		double[][][] nodenextForce = new double[numNodes][clk+1][numNodes];
+		double[][][] nodeprevForce = new double[clk+1][numNodes][numNodes];
+		double[][][] nodenextForce = new double[clk+1][numNodes][numNodes];
+		double[][] totnodeprevForce = new double[clk+1][numNodes];
+		double[][] totnodenextForce = new double[clk+1][numNodes];
+		double[][] totalForce = new double[clk+1][numNodes];
 		
 		int[][][][] chosenodeProb = new int[numNodes][clk+1][clk+1][numNodes];
 		
@@ -1895,12 +1898,15 @@ public class Scheduler {
 				nodeselfForce[i][j] = -99;
 			}
 		
-		for(int u = 0; u < numNodes; u++)
-			for(int i = 0; i<clk+1; i++)	//populate probabilities with zeros and forces with high negative forces
+		for(int u = 0; u < clk+1; u++)
+			for(int i = 0; i< numNodes; i++)	//populate probabilities with zeros and forces with high negative forces
 				for (int j = 0; j<numNodes; j++)
 				{
 					nodeprevForce[u][i][j] = 0;
 					nodenextForce[u][i][j] = 0;
+					totnodeprevForce[u][i] = 0;
+					totnodenextForce[u][i] = 0;
+					totalForce[u][i] = 0;
 				}
 		
 		double[][] q = new double[5][clk+1];	// q[resource][state] -> resource distribution.
@@ -1997,18 +2003,96 @@ public class Scheduler {
 							nodeselfForce[state][cNode] = 0;	//reset nodeselfForce to 0 from -99 for existing node probabilities
 					}
 							
-					// TODO: Work here
+					// TODO: Work on next and prev force here
 					
 									if(inCDFG.dependOn(cNode)[0]!=-1)	//if there are connections to next
 									{
+
+										int nqUsed = 0;
 										for(int nNode = 0; nNode<inCDFG.dependOn(cNode).length; nNode++)	//iterate through nodes cNode leads to and sets the starting temp state for nNode to cNode state + 1
-											chosenstate[nNode] = state + 1;
+										{
+											chosenstate[inCDFG.dependOn(cNode)[nNode]] = state + 1; //set the state of next node to 1 higher than that of cNode
+											
+											//Determine it's operation
+											if(inCDFG.nodes[inCDFG.dependOn(cNode)[nNode]].getOp().equalsIgnoreCase("alu"))
+												nqUsed = 0;
+											
+											if(inCDFG.nodes[inCDFG.dependOn(cNode)[nNode]].getOp().equalsIgnoreCase("mul"))
+												nqUsed = 1;
+											
+											if(inCDFG.nodes[inCDFG.dependOn(cNode)[nNode]].getOp().equalsIgnoreCase("min"))
+												nqUsed = 2;
+											
+											if(inCDFG.nodes[inCDFG.dependOn(cNode)[nNode]].getOp().equalsIgnoreCase("max"))
+												nqUsed = 3;
+											
+											if(inCDFG.nodes[inCDFG.dependOn(cNode)[nNode]].getOp().equalsIgnoreCase("abs"))
+												nqUsed = 4;
+											
+											for(int somestate = tf_start[inCDFG.dependOn(cNode)[nNode]]; somestate <= tf_end[inCDFG.dependOn(cNode)[nNode]]; somestate++)
+											{
+												if(somestate==chosenstate[inCDFG.dependOn(cNode)[nNode]])
+												{
+													nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]] = nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]] + q[nqUsed][somestate]*(1-nodeProb[chosenstate[inCDFG.dependOn(cNode)[nNode]]][inCDFG.dependOn(cNode)[nNode]]);
+												}
+												else
+												{
+													nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]] = nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]] + q[nqUsed][somestate]*(0-nodeProb[chosenstate[inCDFG.dependOn(cNode)[nNode]]][inCDFG.dependOn(cNode)[nNode]]);
+												}
+											}
+											totnodenextForce[state][cNode] = totnodenextForce[state][cNode] + nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]];
+											
+											System.out.println("=================================");
+											System.out.println("Next node force of node " + inCDFG.dependOn(cNode)[nNode] + " is:" + nodenextForce[state][cNode][inCDFG.dependOn(cNode)[nNode]]);
+											System.out.println("Chosen state is: " + chosenstate[inCDFG.dependOn(cNode)[nNode]]);
+											System.out.println("TOTAL NEXT FORCE: " + totnodenextForce[state][cNode]);
+										}
+											
 									}
-				
+
 									if(inCDFG.nodes[cNode].getConn()[0]!=-1)	//if there are connections to previous
 									{
-										for(int pNode = 0; pNode<inCDFG.nodes[cNode].getConn().length; pNode++)	//iterate through nodes cNode leads to and sets the ending temp state for nNode to cNode state - 1
-											chosenstate[pNode] = state - 1;
+										int pqUsed = 0;
+										for(int pNode = 0; pNode<inCDFG.nodes[cNode].getConn().length; pNode++)	//iterate through nodes cNode leads to and set the chosen state to state-1
+										{
+											chosenstate[inCDFG.nodes[cNode].getConn()[pNode]] = state - 1; //set the state of prev node to 1 lower than that of cNode
+											
+											//Determine it's operation
+											if(inCDFG.nodes[inCDFG.nodes[cNode].getConn()[pNode]].getOp().equalsIgnoreCase("alu"))
+												pqUsed = 0;
+											
+											if(inCDFG.nodes[inCDFG.nodes[cNode].getConn()[pNode]].getOp().equalsIgnoreCase("mul"))
+												pqUsed = 1;
+											
+											if(inCDFG.nodes[inCDFG.nodes[cNode].getConn()[pNode]].getOp().equalsIgnoreCase("min"))
+												pqUsed = 2;
+											
+											if(inCDFG.nodes[inCDFG.nodes[cNode].getConn()[pNode]].getOp().equalsIgnoreCase("max"))
+												pqUsed = 3;
+											
+											if(inCDFG.nodes[inCDFG.nodes[cNode].getConn()[pNode]].getOp().equalsIgnoreCase("abs"))
+												pqUsed = 4;
+											
+											for(int somestate = tf_start[inCDFG.nodes[cNode].getConn()[pNode]]; somestate <= tf_end[inCDFG.nodes[cNode].getConn()[pNode]]; somestate++)
+											{
+												if(somestate==chosenstate[inCDFG.nodes[cNode].getConn()[pNode]])
+												{
+													nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]] = nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]] + q[pqUsed][somestate]*(1-nodeProb[chosenstate[inCDFG.nodes[cNode].getConn()[pNode]]][inCDFG.nodes[cNode].getConn()[pNode]]);
+												}
+												else
+												{
+													nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]] = nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]] + q[pqUsed][somestate]*(0-nodeProb[chosenstate[inCDFG.nodes[cNode].getConn()[pNode]]][inCDFG.nodes[cNode].getConn()[pNode]]);
+												}
+											}
+											totnodeprevForce[state][cNode] = totnodeprevForce[state][cNode] + nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]];
+											
+											//System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^");
+											System.out.println("prev node force of node " + inCDFG.nodes[cNode].getConn()[pNode] + " is:" + nodeprevForce[state][cNode][inCDFG.nodes[cNode].getConn()[pNode]]);
+											System.out.println("Chosen state is: " + chosenstate[inCDFG.nodes[cNode].getConn()[pNode]]);
+											System.out.println("TOTAL PREVIOUS FORCE: " + totnodeprevForce[state][cNode]);
+										}
+										
+										
 									}
 					
 					// ^^ just selected states for previous and next nodes
@@ -2025,7 +2109,7 @@ public class Scheduler {
 					
 					//Diagnostics
 					
-					System.out.println("***********************************");
+					System.out.println("^^^^^^^^^^^^^^^^^^");
 					System.out.println("Node: " + cNode);
 					System.out.println("Used state: " + state + " Self force: " + nodeselfForce[state][cNode]);
 					
@@ -2033,25 +2117,60 @@ public class Scheduler {
 				}
 			}
 			
+			//Calculating total force for each possible state for each node:
+			
+			int[] finalstate = new int[numNodes];
+			for (int cNode = 0; cNode < numNodes; cNode++)	//populate final state for each node with its default nodes
+			{
+				finalstate[cNode] = inCDFG.getState();
+			}
+			
+			double[] maxForce = new double[numNodes];
+			
+			for (int cNode = 0; cNode < numNodes; cNode++)	//calculates forces
+			{
+				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
+				{
+					totalForce[state][cNode] = nodeselfForce[state][cNode] + totnodenextForce[state][cNode] + totnodeprevForce[state][cNode];
+					System.out.println("");
+					System.out.println("");
+					System.out.println("Total force for node " + cNode + " with selected state " + state + " is " + totalForce[state][cNode]);
+				}
+				maxForce[cNode] = totalForce[tf_start[cNode]][cNode];
+			}
 			
 			
-			// TODO: Compute self-forces & ps-forces & total forces
 			
-			// TODO: Schedule operation with least force and update timeframe
-			
+			for (int cNode = 0; cNode < numNodes; cNode++)	//calculates maxForce for each node
+			{
+				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
+				{
+					if(state!=tf_start[cNode])
+					{
+						if(totalForce[state][cNode]>maxForce[cNode])
+						{
+							maxForce[cNode] = totalForce[state][cNode];
+						}
+					}
+				}	
+			}
 		
-			
-			
-			// For diagnostics ** FIX LATER **
-			//nodesDone = numNodes;	
-			
-		//}
-		
-		
-		
-		
-		
-		
+			for (int cNode = 0; cNode < numNodes; cNode++)	//sets states for nodes
+			{
+				for(int state = tf_start[cNode]; state<=tf_end[cNode]; state++)
+				{
+					if(totalForce[state][cNode]==maxForce[cNode])
+					{
+						finalstate[cNode] = state;
+						outCDFG.setState(state);
+						System.out.println("-------------------------");
+						
+						System.out.println("Final state of node " + cNode + " is " + state);
+						System.out.println("Maximum force is: " + maxForce[cNode]);
+					}
+				}	
+			}
+
 		return outCDFG;
 	}
 	
