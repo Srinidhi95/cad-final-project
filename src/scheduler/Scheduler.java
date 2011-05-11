@@ -99,7 +99,7 @@ public class Scheduler {
 		{
 		CDFG tc2CDFG;
 		tc2CDFG = newCDFG.copy();
-		tc2CDFG = performTC2(tc2CDFG, alapCDFG, asapCDFG, 4);
+		tc2CDFG = performTC2(tc2CDFG, alapCDFG, asapCDFG, tc2CDFG.getCLK());
 		tc2CDFG.printCDFG("tc2CDFG.txt");
 		}
 		
@@ -1947,19 +1947,24 @@ public class Scheduler {
 						}
 						//	DIAGNOSTICS
 						
-						  /*	System.out.println("Inside loop. STATE: " + state + " Node: " + cNode);
+						  	System.out.println("STATE: " + state + " Node: " + cNode);
 							System.out.println("Probability: " + nodeProb[state][cNode] + " and node op is: " + inCDFG.nodes[cNode].getOp());
-							System.out.println("Resource distribution: ");
-							System.out.println("ALU in state: " + state + " is " + distALU[state] + " and " + q[0][state]);
-							System.out.println("MUL in state: " + state + " is " + distMUL[state] + " and " + q[1][state]);
-							System.out.println("MIN in state: " + state + " is " + distMIN[state] + " and " + q[2][state]);
-							System.out.println("MAX in state: " + state + " is " + distMAX[state] + " and " + q[3][state]);
-							System.out.println("ABS in state: " + state + " is " + distABS[state] + " and " + q[4][state]);
-							System.out.println("-----------------------");
-						 	*/	
+						 		
 					}		
 			}
 			
+			for(int state = 1; state<=clk; state++)
+			{
+				System.out.println("-----------------------");
+				System.out.println("Resource distribution: ");
+				System.out.println("ALU in state: " + state + " is " + q[0][state]);
+				System.out.println("MUL in state: " + state + " is " + q[1][state]);
+				System.out.println("MIN in state: " + state + " is " + q[2][state]);
+				System.out.println("MAX in state: " + state + " is " + q[3][state]);
+				System.out.println("ABS in state: " + state + " is " + q[4][state]);
+				
+			}
+				
 			
 			
 			
@@ -2019,12 +2024,12 @@ public class Scheduler {
 					
 					
 					//Diagnostics
-					/*
-					System.out.println("*********************************************************************");
+					
+					System.out.println("***********************************");
 					System.out.println("Node: " + cNode);
 					System.out.println("Used state: " + state + " Self force: " + nodeselfForce[state][cNode]);
-					System.out.println("*********************************************************************");
-					*/
+					
+					
 				}
 			}
 			

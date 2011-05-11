@@ -3,41 +3,62 @@ ASAP CDFG
 =====================
 ID 		= 	0
 State 	= 	1
-Op 		= 	alu
+Op 		= 	mul
 No Dependencies.
 ----------------------------
 ID 		= 	1
 State 	= 	1
-Op 		= 	alu
+Op 		= 	mul
 No Dependencies.
 ----------------------------
 ID 		= 	2
 State 	= 	2
-Op 		= 	alu
+Op 		= 	mul
 Dep.	=	(0,1)
 # of Dependencies = 2
 ----------------------------
 ID 		= 	3
 State 	= 	3
-Op 		= 	min
+Op 		= 	alu
 Dep.	=	(2)
 # of Dependencies = 1
 ----------------------------
 ID 		= 	4
 State 	= 	4
-Op 		= 	max
-Dep.	=	(3)
-# of Dependencies = 1
+Op 		= 	alu
+Dep.	=	(3,6)
+# of Dependencies = 2
 ----------------------------
 ID 		= 	5
-State 	= 	4
-Op 		= 	max
-Dep.	=	(3)
-# of Dependencies = 1
+State 	= 	1
+Op 		= 	mul
+No Dependencies.
 ----------------------------
 ID 		= 	6
 State 	= 	2
+Op 		= 	mul
+Dep.	=	(5)
+# of Dependencies = 1
+----------------------------
+ID 		= 	7
+State 	= 	1
+Op 		= 	mul
+No Dependencies.
+----------------------------
+ID 		= 	8
+State 	= 	2
 Op 		= 	alu
-Dep.	=	(1)
+Dep.	=	(7)
+# of Dependencies = 1
+----------------------------
+ID 		= 	9
+State 	= 	1
+Op 		= 	alu
+No Dependencies.
+----------------------------
+ID 		= 	10
+State 	= 	2
+Op 		= 	alu
+Dep.	=	(9)
 # of Dependencies = 1
 ----------------------------
